@@ -37,15 +37,15 @@
     },
     {
       "src": "/calculadora",
-      "dest": "/calculadora.html"
+      "dest": "/server.js"
     },
     {
       "src": "/tabeladecalculo",
-      "dest": "/calculadora.html"
+      "dest": "/server.js"
     },
     {
       "src": "/calculadora.html",
-      "dest": "/calculadora.html"
+      "dest": "/server.js"
     },
     {
       "src": "/(.*)",
