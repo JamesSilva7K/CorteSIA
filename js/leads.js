@@ -138,6 +138,15 @@
         if (ctxCard.includes('BETONEIRA') || ctxCard.includes('FROTA') || upper.includes('BETONEIRA') || upper.includes('FROTA') || urlStr.includes('betoneira')) {
             return `Olá! Gostaria de saber mais sobre a frota de caminhões betoneira e a logística de entrega de concreto da Cortesia Concreto.`;
         }
+        if (upper.includes('PORTAL DO CLIENTE') || upper.includes('PORTAL') || urlStr.includes('topconsuite') || urlStr.includes('customer')) {
+            return `Olá! Sou cliente da Cortesia Concreto e gostaria de suporte ou acesso ao Portal do Cliente via WhatsApp.`;
+        }
+        if (upper.includes('CORTESIACONCRETO.COM.BR') || urlStr.includes('cortesiaconcreto.com.br')) {
+            return `Olá! Estou acessando o site oficial da Cortesia Concreto e gostaria de atendimento comercial.`;
+        }
+        if (upper.includes('ARTEH') || urlStr.includes('arteh.com.br')) {
+            return `Olá! Vi os créditos de desenvolvimento da Cortesia Concreto e gostaria de atendimento comercial.`;
+        }
         if (upper.includes('CALCULAR') || ctxSec.includes('CÁLCULO') || ctxSec.includes('CALCULO') || urlStr.includes('tabeladecalculo')) {
             return `Olá! Gostaria de auxílio técnico para cálculo exato de volume de concreto (m³) e dimensionamento para a minha obra.`;
         }
@@ -184,6 +193,11 @@
             return `Olá! Gostaria de obter mais informações técnicas e comerciais sobre os serviços da Cortesia Concreto.`;
         }
 
+        if (element && (element.classList && element.classList.contains('social-wa-link') || element.getAttribute('data-social') || urlStr.includes('facebook') || urlStr.includes('instagram') || urlStr.includes('youtube') || urlStr.includes('linkedin'))) {
+            const net = (element.getAttribute && element.getAttribute('data-social')) || (urlStr.includes('instagram') ? 'Instagram' : (urlStr.includes('facebook') ? 'Facebook' : (urlStr.includes('youtube') ? 'YouTube' : 'LinkedIn')));
+            return `Olá! Estive acompanhando a Cortesia Concreto no ${net} e gostaria de atendimento comercial imediato para minha obra.`;
+        }
+
         // Fallback inteligente contextualizado
         const itemContext = cardTitle ? ` a respeito de "${cardTitle}"` : (cleanText ? ` sobre "${cleanText}"` : '');
         return `Olá! Estive navegando no site oficial da Cortesia Concreto e gostaria de atendimento comercial${itemContext}. Como podemos prosseguir?`;
@@ -196,28 +210,113 @@
         const cleanWa = config.whatsapp.replace(/\D/g, '');
         const baseWaUrl = `https://api.whatsapp.com/send?phone=${cleanWa}`;
 
+        const cleanNoDDI = cleanWa.replace(/^55/, '');
+        const formattedFull = cleanNoDDI.length === 11 
+            ? `(${cleanNoDDI.substring(0, 2)}) ${cleanNoDDI.substring(2, 7)}-${cleanNoDDI.substring(7)}`
+            : (cleanNoDDI.length === 10 
+                ? `(${cleanNoDDI.substring(0, 2)}) ${cleanNoDDI.substring(2, 6)}-${cleanNoDDI.substring(6)}`
+                : cleanNoDDI);
+
+        const formattedClean = cleanNoDDI.length === 11 
+            ? `${cleanNoDDI.substring(0, 2)} ${cleanNoDDI.substring(2, 7)}-${cleanNoDDI.substring(7)}`
+            : (cleanNoDDI.length === 10 
+                ? `${cleanNoDDI.substring(0, 2)} ${cleanNoDDI.substring(2, 6)}-${cleanNoDDI.substring(6)}`
+                : cleanNoDDI);
+
         // Sincronizar textos visíveis do header dinamicamente
         const dynamicWaLinks = document.querySelectorAll('[data-dynamic-contact="whatsapp-link"]');
         dynamicWaLinks.forEach(el => el.href = baseWaUrl);
 
-        const dynamicWaTexts = document.querySelectorAll('[data-dynamic-contact="whatsapp-text"]');
+        const dynamicWaTexts = document.querySelectorAll('[data-dynamic-contact="whatsapp-text"], [data-dynamic-contact="phone-matriz-top"]');
         dynamicWaTexts.forEach(el => {
-            let num = cleanWa.replace(/^55/, '');
-            if (num.length >= 10) {
-                el.textContent = `${num.substring(0, 2)} ${num.substring(2, 6)}-${num.substring(6)}`;
-            } else {
-                el.textContent = cleanWa;
-            }
+            el.textContent = formattedClean;
         });
+
+        const dynamicMatrizCards = document.querySelectorAll('[data-dynamic-contact="phone-matriz-card"]');
+        dynamicMatrizCards.forEach(el => {
+            el.textContent = formattedFull;
+        });
+
+        // Sincronizar todos os telefones de todas as Usinas (cards e topo)
+        const plantTels = document.querySelectorAll('[data-dynamic-contact="plant-tel"]');
+        plantTels.forEach(el => {
+            el.textContent = formattedFull;
+        });
+
+        const plantTopPhones = document.querySelectorAll('[data-dynamic-contact="plant-top-phone"]');
+        plantTopPhones.forEach(el => {
+            el.textContent = formattedClean;
+        });
+
+        // Atualização em tempo real das imagens das usinas
+        const plantImgs = document.querySelectorAll('.plant-card-img');
+        plantImgs.forEach(img => {
+            const baseSrc = img.getAttribute('src').split('?')[0];
+            img.src = `${baseSrc}?v=${Date.now()}`;
+        });
+
+        // Suporte inteligente ao Telefone 2 (se configurado no bot)
+        if (config.whatsapp2) {
+            const cleanWa2 = config.whatsapp2.replace(/\D/g, '');
+            const cleanNoDDI2 = cleanWa2.replace(/^55/, '');
+            const formatted2 = cleanNoDDI2.length === 11 
+                ? `${cleanNoDDI2.substring(0, 2)} ${cleanNoDDI2.substring(2, 7)}-${cleanNoDDI2.substring(7)}`
+                : `${cleanNoDDI2.substring(0, 2)} ${cleanNoDDI2.substring(2, 6)}-${cleanNoDDI2.substring(6)}`;
+
+            const wa2Containers = document.querySelectorAll('[data-dynamic-contact="whatsapp2-container"]');
+            wa2Containers.forEach(el => el.style.display = 'inline');
+
+            const wa2Links = document.querySelectorAll('[data-dynamic-contact="whatsapp2-link"]');
+            wa2Links.forEach(el => el.href = `https://api.whatsapp.com/send?phone=${cleanWa2}`);
+
+            const wa2Texts = document.querySelectorAll('[data-dynamic-contact="whatsapp2-text"]');
+            wa2Texts.forEach(el => el.textContent = formatted2);
+        }
 
         const dynamicEmailTexts = document.querySelectorAll('[data-dynamic-contact="email-text"]');
         if (config.email) {
             dynamicEmailTexts.forEach(el => el.textContent = config.email);
         }
 
+        // Sincronizar o ano do copyright sempre para o ano atual
+        const currentYear = new Date().getFullYear().toString();
+        const yearEls = document.querySelectorAll('[data-dynamic-contact="current-year"], #currentYear');
+        yearEls.forEach(el => el.textContent = currentYear);
+
+        // Substituição inteligente recursiva em textos residuais (caso número tenha mudado)
+        if (cleanWa !== '551129163000' && cleanWa !== '1129163000') {
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+            let node;
+            while (node = walker.nextNode()) {
+                if (node.parentElement && (node.parentElement.tagName === 'SCRIPT' || node.parentElement.tagName === 'STYLE')) continue;
+                if (node.nodeValue.includes('(11) 2916-3000')) {
+                    node.nodeValue = node.nodeValue.replace(/\(11\)\s*2916-3000/g, formattedFull);
+                } else if (node.nodeValue.includes('11 2916-3000')) {
+                    node.nodeValue = node.nodeValue.replace(/11\s*2916-3000/g, formattedClean);
+                }
+            }
+        }
+
+        // Configuração inteligente de links das Usinas no topo
+        const plantTopLinks = document.querySelectorAll('.plant-top-link');
+        plantTopLinks.forEach(el => {
+            const plantName = el.getAttribute('data-plant') || 'Central';
+            const plantMsg = `Olá! Gostaria de atendimento comercial com a equipe da ${plantName} da Cortesia Concreto.`;
+            el.href = `${baseWaUrl}&text=${encodeURIComponent(plantMsg)}`;
+            el.target = '_blank';
+            el.setAttribute('rel', 'noopener noreferrer');
+            el.onclick = () => {
+                sendLeadEvent('whatsapp', `Clique Telefone Topo Usina (${plantName})`, {
+                    buttonText: plantName,
+                    destination: cleanWa
+                });
+            };
+        });
+
         // Atualizar links diretos de WhatsApp e botões flutuantes
         const waElements = document.querySelectorAll('a[href*="whatsapp.com"], [data-dynamic-contact="whatsapp-link"]');
         waElements.forEach(el => {
+            if (el.classList.contains('plant-top-link')) return;
             const contextText = el.innerText ? el.innerText.trim() : 'Atendimento Geral';
             const msg = generateFormalMessage(el, contextText, '', '', el.getAttribute('href'));
             el.href = `${baseWaUrl}&text=${encodeURIComponent(msg)}`;
@@ -232,6 +331,22 @@
             };
         });
 
+        // Configuração inteligente das Redes Sociais direcionando ao WhatsApp
+        const socialLinks = document.querySelectorAll('.social-wa-link, .icons-hover-black a');
+        socialLinks.forEach(el => {
+            const net = el.getAttribute('data-social') || (el.querySelector('.fa-instagram') ? 'Instagram' : (el.querySelector('.fa-facebook') ? 'Facebook' : (el.querySelector('.fa-youtube') ? 'YouTube' : 'LinkedIn')));
+            const socialMsg = `Olá! Vi o canal da Cortesia Concreto no ${net} e gostaria de atendimento comercial via WhatsApp.`;
+            el.href = `${baseWaUrl}&text=${encodeURIComponent(socialMsg)}`;
+            el.target = '_blank';
+            el.setAttribute('rel', 'noopener noreferrer');
+            el.onclick = () => {
+                sendLeadEvent('whatsapp', `Clique em Rede Social (${net})`, {
+                    buttonText: net,
+                    destination: cleanWa
+                });
+            };
+        });
+
         // Varredura de TODOS os botões, links de cards, links institucionais e ações do site
         const interactiveElements = document.querySelectorAll(
             'a, button, .btn, .btn-text, .post-more-link a'
@@ -239,6 +354,7 @@
 
         interactiveElements.forEach(el => {
             if (el.classList.contains('menu')) return;
+            if (el.classList.contains('social-wa-link') || el.closest('.icons-hover-black')) return;
             if (el.type === 'submit') return;
 
             const rawHref = (el.getAttribute('href') || '').trim();
@@ -247,12 +363,13 @@
                 if (!el.innerText && !el.title) return;
             }
 
-            if (rawHref.includes('facebook.com') || rawHref.includes('instagram.com') || rawHref.includes('youtube.com') || rawHref.includes('linkedin.com')) {
-                return;
-            }
-
             const isInNav = !!el.closest('.navigation');
-            if (isInNav && rawHref === 'index.html') return;
+            // Se for link de âncora interna pura para seções na mesma página (ex: #about-section)
+            if (rawHref.startsWith('#') && rawHref.length > 1) {
+                const targetElement = document.querySelector(rawHref);
+                if (targetElement) return; // Permite rolagem interna suave
+            }
+            if (isInNav && (rawHref === 'index.html' || rawHref === './' || rawHref === '/')) return;
 
             const parentCard = el.closest('.blog-post') || el.closest('.project-item') || el.closest('.block-content') || el.closest('.col-sm-6') || el.closest('.col-sm-4') || el.closest('.col-sm-12');
             let cardTitle = '';
@@ -297,6 +414,25 @@
                     window.open(waTargetUrl, '_blank');
                 };
             }
+        });
+
+        // Interatividade nos cards das usinas (clique direto na filial/telefone abre WhatsApp)
+        const plantCards = document.querySelectorAll('.project-item .about-block');
+        plantCards.forEach(card => {
+            const h3 = card.querySelector('h3');
+            const plantTitle = h3 ? h3.innerText.trim() : 'Central';
+            card.style.cursor = 'pointer';
+            card.setAttribute('title', `Falar com ${plantTitle} no WhatsApp`);
+            card.onclick = (e) => {
+                if (e.target.tagName === 'A') return;
+                const msg = `Olá! Gostaria de atendimento comercial com a equipe da ${plantTitle} da Cortesia Concreto.`;
+                const targetUrl = `${baseWaUrl}&text=${encodeURIComponent(msg)}`;
+                sendLeadEvent('whatsapp', `Clique no Card da Usina (${plantTitle})`, {
+                    buttonText: plantTitle,
+                    destination: cleanWa
+                });
+                window.open(targetUrl, '_blank');
+            };
         });
     }
 

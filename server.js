@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { Telegraf, Markup } = require('telegraf');
 require('dotenv').config();
-const { generateFraudAlertImage, formatPhone } = require('./generate-banner');
+const { generateFraudAlertImage, updateAllPlantBanners, formatPhone } = require('./generate-banner');
 
 const app = express();
 
@@ -56,11 +56,20 @@ app.use(express.static('.'));
 const CONFIG_FILE = './config.json';
 const METRICS_FILE = './metrics.json';
 
+// Helper to normalize phone numbers to international 55 standard
+function normalizeWhatsappNumber(input) {
+  if (!input) return '';
+  let digits = input.replace(/\D/g, '');
+  if ((digits.length === 10 || digits.length === 11) && !digits.startsWith('55')) {
+    digits = '55' + digits;
+  }
+  return digits;
+}
+
 // Helper to read config
 function readConfig() {
   const defaults = {
     whatsapp: "551129163000",
-    whatsapp2: "551129163000",
     domain: "www.cortesiaconcreto.com.br",
     email: "VENDAS@CORTESIACONCRETO.COM.BR"
   };
@@ -101,12 +110,27 @@ function updateMetric(action) {
 // API Endpoint for frontend
 app.get('/api/config', (req, res) => {
   const config = readConfig();
-  res.json(config);
+  const wa = config.whatsapp || '551129163000';
+  const cleanNoDDI = wa.replace(/\D/g, '').replace(/^55/, '');
+  
+  let formatted = formatPhone(wa);
+  let formattedLocal = cleanNoDDI.length === 10 
+    ? `${cleanNoDDI.substring(0, 2)} ${cleanNoDDI.substring(2, 6)}-${cleanNoDDI.substring(6)}`
+    : (cleanNoDDI.length === 11 
+      ? `${cleanNoDDI.substring(0, 2)} ${cleanNoDDI.substring(2, 7)}-${cleanNoDDI.substring(7)}`
+      : cleanNoDDI);
+
+  res.json({
+    ...config,
+    whatsappFormatted: formatted,
+    whatsappFormattedLocal: formattedLocal,
+    whatsapp2Formatted: config.whatsapp2 ? formatPhone(config.whatsapp2) : null
+  });
 });
 
 // Telegram Bot Setup
 const botToken = process.env.BOT_TOKEN;
-let adminId = process.env.ADMIN_ID ? parseInt(process.env.ADMIN_ID, 10) : null;
+let adminId = process.env.ADMIN_ID ? parseInt(process.env.ADMIN_ID, 10) : (readConfig().adminId || null);
 
 if (botToken) {
   const bot = new Telegraf(botToken);
@@ -115,6 +139,9 @@ if (botToken) {
     // Se o adminId não estiver configurado no .env, vincula ao primeiro usuário que interagir
     if (!adminId && ctx.from) {
       adminId = ctx.from.id;
+      const cfg = readConfig();
+      cfg.adminId = adminId;
+      writeConfig(cfg);
       console.log(`[Bot Telegram] Admin identificado e vinculado com sucesso: ID ${adminId} (${ctx.from.first_name || ''})`);
     }
 
@@ -173,17 +200,20 @@ if (botToken) {
         outputPath: imgPath
       });
 
+      // Atualiza também todas as 7 fotos das Usinas
+      await updateAllPlantBanners(config.whatsapp);
+
       if (ctx.telegram && waitMsg) {
         ctx.telegram.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => { });
       }
 
       await ctx.replyWithPhoto({ source: imgPath }, {
-        caption: `✅ *Imagem de Prevenção de Fraudes Gerada com Sucesso!*\n\n` +
+        caption: `✅ *Canais e Imagens Sincronizados com Sucesso!*\n\n` +
           `🌐 *Domínio:* ${config.domain}\n` +
           `📱 *Telefone 1:* ${formatPhone(config.whatsapp)}\n` +
           `📱 *Telefone 2:* ${config.whatsapp2 ? formatPhone(config.whatsapp2) : 'Desativado (Apenas 1 número)'}\n` +
           `✉️ *E-mail:* ${config.email}\n\n` +
-          `🚀 *Esta imagem já está ativa como pop-up de entrada de todos os leads no site!*`,
+          `🚀 *Pop-up de fraude e todas as 7 fotos de usinas atualizados com o novo número!*`,
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([[Markup.button.callback('🔙 Voltar ao Painel', 'action_back_menu')]])
       });
@@ -280,10 +310,10 @@ if (botToken) {
           config.domain = domainMatch[0].replace(/^https?:\/\//, '').toLowerCase();
         }
         if (phonesMatch && phonesMatch[0]) {
-          config.whatsapp = phonesMatch[0].replace(/\D/g, '');
+          config.whatsapp = normalizeWhatsappNumber(phonesMatch[0]);
         }
         if (phonesMatch && phonesMatch[1]) {
-          config.whatsapp2 = phonesMatch[1].replace(/\D/g, '');
+          config.whatsapp2 = normalizeWhatsappNumber(phonesMatch[1]);
         }
         writeConfig(config);
 
@@ -307,28 +337,28 @@ if (botToken) {
         ctx.reply('❌ Formato de domínio inválido. Tente novamente (ex: `www.cortesiaconcreto.com.br`).', { parse_mode: 'Markdown' });
       }
     } else if (userState === 'awaiting_whatsapp') {
-      const digits = text.replace(/\D/g, '');
-      if (digits.length >= 8) {
+      const normalized = normalizeWhatsappNumber(text);
+      if (normalized && normalized.length >= 10) {
         const config = readConfig();
-        config.whatsapp = digits;
+        config.whatsapp = normalized;
         writeConfig(config);
         state[ctx.from.id] = null;
-        await ctx.reply('✅ Telefone 1 atualizado com sucesso!');
+        await ctx.reply(`✅ Telefone 1 atualizado com sucesso: \`${formatPhone(normalized)}\`!`, { parse_mode: 'Markdown' });
         await handleImageRegeneration(ctx);
       } else {
-        ctx.reply('❌ Formato inválido. Envie um número válido com DDD.');
+        ctx.reply('❌ Formato inválido. Envie um número válido com DDD (Ex: `11 99999-8888` ou `11 2916-3000`).', { parse_mode: 'Markdown' });
       }
     } else if (userState === 'awaiting_whatsapp2') {
-      const digits = text.replace(/\D/g, '');
-      if (digits.length >= 8) {
+      const normalized = normalizeWhatsappNumber(text);
+      if (normalized && normalized.length >= 10) {
         const config = readConfig();
-        config.whatsapp2 = digits;
+        config.whatsapp2 = normalized;
         writeConfig(config);
         state[ctx.from.id] = null;
-        await ctx.reply('✅ Telefone 2 atualizado com sucesso!');
+        await ctx.reply(`✅ Telefone 2 atualizado com sucesso: \`${formatPhone(normalized)}\`!`, { parse_mode: 'Markdown' });
         await handleImageRegeneration(ctx);
       } else {
-        ctx.reply('❌ Formato inválido. Envie um número válido com DDD.');
+        ctx.reply('❌ Formato inválido. Envie um número válido com DDD (Ex: `11 99999-8888` ou `11 2916-3000`).', { parse_mode: 'Markdown' });
       }
     } else if (userState === 'awaiting_email') {
       if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
@@ -415,8 +445,10 @@ if (botToken) {
         return res.status(400).json({ error: 'Ação inválida' });
     }
 
-    bot.telegram.sendMessage(adminId, message, { parse_mode: 'Markdown' })
-      .catch(err => console.error('Error sending lead to Telegram:', err));
+    if (adminId) {
+      bot.telegram.sendMessage(adminId, message, { parse_mode: 'Markdown' })
+        .catch(err => console.error('Error sending lead to Telegram:', err));
+    }
 
     res.json({ success: true, blindado: true });
   });
@@ -430,8 +462,15 @@ app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api/')) {
     const config = readConfig();
     const cleanWa = (config.whatsapp || '551129163000').replace(/\D/g, '');
-    const cleanPath = decodeURIComponent(req.path).replace(/[/\\._-]/g, ' ').trim();
-    const msg = encodeURIComponent(`Olá! Gostaria de atendimento comercial e informações a respeito de "${cleanPath || 'Cortesia Concreto'}". Poderia me orientar?`);
+    let cleanPath = decodeURIComponent(req.path)
+      .replace(/\.(html|php|pdf|aspx|jsp)$/i, '')
+      .replace(/[/\\._-]/g, ' ')
+      .trim();
+    if (cleanPath.toLowerCase().includes('cortesia concreto')) {
+      cleanPath = cleanPath.replace(/cortesia\s*concreto/gi, '').trim();
+    }
+    const subject = cleanPath ? `a respeito de "${cleanPath}"` : 'sobre os serviços da Cortesia Concreto';
+    const msg = encodeURIComponent(`Olá! Gostaria de atendimento comercial e informações ${subject}. Poderia me orientar?`);
     return res.redirect(`https://api.whatsapp.com/send?phone=${cleanWa}&text=${msg}`);
   }
   next();
