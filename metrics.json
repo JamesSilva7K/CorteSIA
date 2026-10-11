@@ -1,13 +1,13 @@
 {
-  "enter": 8,
-  "leave": 7,
+  "enter": 10,
+  "leave": 9,
   "whatsapp": 6,
   "form": 0,
   "invalid_lead": 0,
   "daily": {
     "2026-10-11": {
-      "enter": 0,
-      "leave": 0,
+      "enter": 2,
+      "leave": 2,
       "whatsapp": 1,
       "form": 0,
       "invalid_lead": 0

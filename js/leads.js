@@ -533,17 +533,310 @@
         });
     }
 
-    // 6. INICIALIZAÇÃO IMEDIATA E NO CARREGAMENTO
+    // 6. SUGESTÕES INTELIGENTES E MODERNAS DE ESTADOS E CIDADES (IBGE + AUTOCOMPLETE)
+    const ESTADOS_BRASIL = [
+        { uf: 'SP', nome: 'São Paulo', regiao: 'Sudeste' },
+        { uf: 'RJ', nome: 'Rio de Janeiro', regiao: 'Sudeste' },
+        { uf: 'MG', nome: 'Minas Gerais', regiao: 'Sudeste' },
+        { uf: 'PR', nome: 'Paraná', regiao: 'Sul' },
+        { uf: 'SC', nome: 'Santa Catarina', regiao: 'Sul' },
+        { uf: 'RS', nome: 'Rio Grande do Sul', regiao: 'Sul' },
+        { uf: 'ES', nome: 'Espírito Santo', regiao: 'Sudeste' },
+        { uf: 'DF', nome: 'Distrito Federal', regiao: 'Centro-Oeste' },
+        { uf: 'GO', nome: 'Goiás', regiao: 'Centro-Oeste' },
+        { uf: 'BA', nome: 'Bahia', regiao: 'Nordeste' },
+        { uf: 'PE', nome: 'Pernambuco', regiao: 'Nordeste' },
+        { uf: 'CE', nome: 'Ceará', regiao: 'Nordeste' },
+        { uf: 'MT', nome: 'Mato Grosso', regiao: 'Centro-Oeste' },
+        { uf: 'MS', nome: 'Mato Grosso do Sul', regiao: 'Centro-Oeste' },
+        { uf: 'PA', nome: 'Pará', regiao: 'Norte' },
+        { uf: 'AM', nome: 'Amazonas', regiao: 'Norte' },
+        { uf: 'MA', nome: 'Maranhão', regiao: 'Nordeste' },
+        { uf: 'PB', nome: 'Paraíba', regiao: 'Nordeste' },
+        { uf: 'RN', nome: 'Rio Grande do Norte', regiao: 'Nordeste' },
+        { uf: 'AL', nome: 'Alagoas', regiao: 'Nordeste' },
+        { uf: 'PI', nome: 'Piauí', regiao: 'Nordeste' },
+        { uf: 'SE', nome: 'Sergipe', regiao: 'Nordeste' },
+        { uf: 'RO', nome: 'Rondônia', regiao: 'Norte' },
+        { uf: 'TO', nome: 'Tocantins', regiao: 'Norte' },
+        { uf: 'AC', nome: 'Acre', regiao: 'Norte' },
+        { uf: 'AP', nome: 'Amapá', regiao: 'Norte' },
+        { uf: 'RR', nome: 'Roraima', regiao: 'Norte' }
+    ];
+
+    const CIDADES_POPULARES_SP = [
+        'São Paulo', 'Barueri', 'Caçapava', 'Santos', 'Atibaia', 'Mogi das Cruzes',
+        'Guarulhos', 'Campinas', 'São Bernardo do Campo', 'Santo André', 'Osasco',
+        'São José dos Campos', 'Ribeirão Preto', 'Sorocaba', 'Taubaté', 'Jundiaí',
+        'Piracicaba', 'Bauru', 'São Vicente', 'Praia Grande', 'Guarujá', 'Mauá',
+        'Diadema', 'Carapicuíba', 'Itaquaquecetuba', 'Suzano', 'Taboão da Serra',
+        'Embu das Artes', 'Cotia', 'Jacareí', 'Pindamonhangaba', 'Bragança Paulista'
+    ];
+
+    const cidadesCache = {
+        'SP': CIDADES_POPULARES_SP.slice()
+    };
+
+    function initSmartGeoAutocomplete() {
+        const inputEstado = document.getElementById('leadEstado');
+        const inputCidade = document.getElementById('leadCidade');
+        const dropEstado = document.getElementById('dropdownEstados');
+        const dropCidade = document.getElementById('dropdownCidades');
+        const datalistEstado = document.getElementById('datalistEstados');
+        const datalistCidade = document.getElementById('datalistCidades');
+
+        if (!inputEstado || !inputCidade) return;
+
+        // Pré-popular datalist nativo de estados
+        if (datalistEstado) {
+            datalistEstado.innerHTML = ESTADOS_BRASIL.map(e => 
+                `<option value="${e.uf}">${e.uf} - ${e.nome}</option>`
+            ).join('');
+        }
+
+        // Pré-carregar todas as cidades de SP (principal hub) em background do IBGE
+        fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/SP/municipios')
+            .then(res => res.json())
+            .then(data => {
+                if (Array.isArray(data) && data.length > 0) {
+                    cidadesCache['SP'] = data.map(m => m.nome).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+                    atualizarDatalistCidades('SP');
+                }
+            })
+            .catch(() => {});
+
+        let currentUF = '';
+
+        function extrairUF(texto) {
+            if (!texto) return '';
+            const t = texto.trim().toUpperCase();
+            const direto = ESTADOS_BRASIL.find(e => e.uf === t);
+            if (direto) return direto.uf;
+            const comTraco = ESTADOS_BRASIL.find(e => t.startsWith(e.uf + ' ') || t.startsWith(e.uf + '-') || t.startsWith(e.uf + ' -'));
+            if (comTraco) return comTraco.uf;
+            const porNome = ESTADOS_BRASIL.find(e => t.includes(e.nome.toUpperCase()));
+            if (porNome) return porNome.uf;
+            return '';
+        }
+
+        async function carregarCidades(uf) {
+            if (!uf) return [];
+            const ufUpper = uf.toUpperCase();
+            if (cidadesCache[ufUpper] && cidadesCache[ufUpper].length > 30) {
+                return cidadesCache[ufUpper];
+            }
+            try {
+                const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${ufUpper}/municipios`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const list = data.map(m => m.nome).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+                    cidadesCache[ufUpper] = list;
+                    atualizarDatalistCidades(ufUpper);
+                    return list;
+                }
+            } catch (err) {
+                console.warn('Erro ao carregar cidades do IBGE:', err);
+            }
+            return cidadesCache[ufUpper] || [];
+        }
+
+        function atualizarDatalistCidades(uf) {
+            if (!datalistCidade) return;
+            const list = cidadesCache[uf] || [];
+            datalistCidade.innerHTML = list.slice(0, 50).map(c => `<option value="${c}">${c} (${uf})</option>`).join('');
+        }
+
+        // Renderizar dropdown de Estados
+        function renderEstados(query = '') {
+            const q = query.trim().toUpperCase();
+            const filtrados = ESTADOS_BRASIL.filter(e => 
+                !q || e.uf.includes(q) || e.nome.toUpperCase().includes(q)
+            );
+
+            if (!dropEstado) return;
+
+            if (filtrados.length === 0) {
+                dropEstado.innerHTML = `<div class="smart-geo-empty">Nenhum estado encontrado para "${query}"</div>`;
+                dropEstado.style.display = 'block';
+                return;
+            }
+
+            let html = `<div class="smart-geo-header"><span>Estados do Brasil (${filtrados.length})</span><span style="font-size:9px;color:#94a3b8;">IBGE</span></div>`;
+            filtrados.forEach(e => {
+                html += `
+                    <div class="smart-geo-item" data-uf="${e.uf}" data-nome="${e.nome}">
+                        <span><strong>${e.nome}</strong> <small style="color:#64748b;font-size:11px;">(${e.regiao})</small></span>
+                        <span class="geo-badge">${e.uf}</span>
+                    </div>
+                `;
+            });
+
+            dropEstado.innerHTML = html;
+            dropEstado.style.display = 'block';
+
+            dropEstado.querySelectorAll('.smart-geo-item').forEach(item => {
+                item.addEventListener('mousedown', (ev) => {
+                    ev.preventDefault();
+                    const uf = item.getAttribute('data-uf');
+                    const nome = item.getAttribute('data-nome');
+                    selecionarEstado(uf, nome);
+                });
+            });
+        }
+
+        function selecionarEstado(uf, nome) {
+            currentUF = uf;
+            inputEstado.value = `${uf} - ${nome}`;
+            if (dropEstado) dropEstado.style.display = 'none';
+
+            // Carregar cidades para esse estado imediatamente
+            carregarCidades(uf).then(() => {
+                renderCidades('');
+            });
+
+            // Focar automaticamente na cidade para agilizar
+            inputCidade.placeholder = `Cidade de ${uf} (digite para buscar)...`;
+            inputCidade.focus();
+        }
+
+        // Renderizar dropdown de Cidades
+        async function renderCidades(query = '') {
+            if (!dropCidade) return;
+
+            let uf = currentUF || extrairUF(inputEstado.value);
+            if (!uf) {
+                // Se o usuário ainda não escolheu estado, sugere os principais polos ou orienta
+                dropCidade.innerHTML = `
+                    <div class="smart-geo-header"><span>Selecione um Estado</span></div>
+                    <div class="smart-geo-item" style="color:#475569;font-size:11px;cursor:default;">
+                        <span>💡 Escolha o <strong>Estado</strong> ao lado ou selecione <strong>SP</strong> abaixo:</span>
+                    </div>
+                    <div class="smart-geo-item" data-quick-uf="SP">
+                        <span><strong>São Paulo (SP)</strong> - Polo Principal</span>
+                        <span class="geo-badge">SP</span>
+                    </div>
+                `;
+                dropCidade.style.display = 'block';
+                dropCidade.querySelectorAll('[data-quick-uf]').forEach(el => {
+                    el.addEventListener('mousedown', (ev) => {
+                        ev.preventDefault();
+                        const st = ESTADOS_BRASIL.find(e => e.uf === 'SP');
+                        selecionarEstado('SP', st.nome);
+                    });
+                });
+                return;
+            }
+
+            dropCidade.innerHTML = `<div class="smart-geo-loading">Buscando municípios de ${uf} no IBGE...</div>`;
+            dropCidade.style.display = 'block';
+
+            const cidades = await carregarCidades(uf);
+            const q = query.trim().toUpperCase();
+            const filtradas = cidades.filter(c => !q || c.toUpperCase().includes(q));
+
+            if (filtradas.length === 0) {
+                dropCidade.innerHTML = `<div class="smart-geo-empty">Nenhum município encontrado em ${uf} para "${query}"</div>`;
+                return;
+            }
+
+            const exibidas = filtradas.slice(0, 30);
+            let html = `<div class="smart-geo-header"><span>Cidades em ${uf} (${filtradas.length})</span><span style="font-size:9px;color:#94a3b8;">${filtradas.length > 30 ? 'Mostrando top 30' : 'Todas'}</span></div>`;
+            exibidas.forEach(c => {
+                html += `
+                    <div class="smart-geo-item" data-cidade="${c}">
+                        <span>${c}</span>
+                        <span class="geo-badge">${uf}</span>
+                    </div>
+                `;
+            });
+
+            dropCidade.innerHTML = html;
+            dropCidade.style.display = 'block';
+
+            dropCidade.querySelectorAll('.smart-geo-item').forEach(item => {
+                item.addEventListener('mousedown', (ev) => {
+                    ev.preventDefault();
+                    const c = item.getAttribute('data-cidade');
+                    inputCidade.value = c;
+                    dropCidade.style.display = 'none';
+                });
+            });
+        }
+
+        // Eventos no inputEstado
+        inputEstado.addEventListener('focus', () => {
+            renderEstados(inputEstado.value);
+        });
+        inputEstado.addEventListener('input', () => {
+            const val = inputEstado.value;
+            const uf = extrairUF(val);
+            if (uf) {
+                currentUF = uf;
+                carregarCidades(uf);
+            }
+            renderEstados(val);
+        });
+        inputEstado.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (dropEstado) dropEstado.style.display = 'none';
+                // Auto-formata se o usuário digitou apenas "SP" ou "sp"
+                const uf = extrairUF(inputEstado.value);
+                if (uf) {
+                    const st = ESTADOS_BRASIL.find(e => e.uf === uf);
+                    if (st) {
+                        currentUF = uf;
+                        inputEstado.value = `${uf} - ${st.nome}`;
+                        carregarCidades(uf);
+                    }
+                }
+            }, 200);
+        });
+
+        // Eventos no inputCidade
+        inputCidade.addEventListener('focus', () => {
+            renderCidades(inputCidade.value);
+        });
+        inputCidade.addEventListener('input', () => {
+            const val = inputCidade.value.trim();
+            // Detecção reversa inteligente: Se digitou uma cidade de SP famosa e estado está vazio
+            if (!currentUF && !inputEstado.value) {
+                const matchSP = CIDADES_POPULARES_SP.find(c => c.toUpperCase() === val.toUpperCase());
+                if (matchSP) {
+                    currentUF = 'SP';
+                    inputEstado.value = 'SP - São Paulo';
+                    carregarCidades('SP');
+                }
+            }
+            renderCidades(val);
+        });
+        inputCidade.addEventListener('blur', () => {
+            setTimeout(() => {
+                if (dropCidade) dropCidade.style.display = 'none';
+            }, 200);
+        });
+
+        // Fechar ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.geo-autocomplete-wrapper')) {
+                if (dropEstado) dropEstado.style.display = 'none';
+                if (dropCidade) dropCidade.style.display = 'none';
+            }
+        });
+    }
+
+    // 7. INICIALIZAÇÃO IMEDIATA E NO CARREGAMENTO
     function startSystem() {
         fetch('/api/config')
             .then(res => res.json())
             .then(cfg => {
                 initButtonsSweep(cfg);
                 initFormProtection(cfg.whatsapp || '551129163000');
+                initSmartGeoAutocomplete();
             })
             .catch(() => {
                 initButtonsSweep({ whatsapp: '551129163000' });
                 initFormProtection('551129163000');
+                initSmartGeoAutocomplete();
             });
     }
 
