@@ -1,0 +1,437 @@
+const express = require('express');
+const cors = require('cors');
+const fs = require('fs');
+const path = require('path');
+const { Telegraf, Markup } = require('telegraf');
+require('dotenv').config();
+const { generateFraudAlertImage, formatPhone } = require('./generate-banner');
+
+const app = express();
+
+// Security Headers & Blindagem Backend
+app.disable('x-powered-by');
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  next();
+});
+
+// Basic Rate Limiting
+const rateLimitWindow = 60000; // 1 min
+const maxRequests = 100;
+const ipRequests = new Map();
+app.use((req, res, next) => {
+  const ip = req.ip || req.connection.remoteAddress;
+  const now = Date.now();
+  if (!ipRequests.has(ip)) {
+    ipRequests.set(ip, { count: 1, startTime: now });
+  } else {
+    const data = ipRequests.get(ip);
+    if (now - data.startTime > rateLimitWindow) {
+      data.count = 1;
+      data.startTime = now;
+    } else {
+      data.count++;
+      if (data.count > maxRequests) {
+        return res.status(429).send('Too Many Requests');
+      }
+    }
+  }
+  next();
+});
+
+app.use(cors());
+app.use(express.json());
+app.use(express.text({ type: 'text/plain' }));
+app.use((req, res, next) => {
+  if (req.is('text/plain') && typeof req.body === 'string') {
+    try { req.body = JSON.parse(req.body); } catch (e) { }
+  }
+  next();
+});
+app.use(express.static('.'));
+
+const CONFIG_FILE = './config.json';
+const METRICS_FILE = './metrics.json';
+
+// Helper to read config
+function readConfig() {
+  const defaults = {
+    whatsapp: "551129163000",
+    whatsapp2: "551129163000",
+    domain: "www.cortesiaconcreto.com.br",
+    email: "VENDAS@CORTESIACONCRETO.COM.BR"
+  };
+  if (fs.existsSync(CONFIG_FILE)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+      return { ...defaults, ...parsed };
+    } catch (e) { }
+  }
+  return defaults;
+}
+
+// Helper to write config
+function writeConfig(data) {
+  fs.writeFileSync(CONFIG_FILE, JSON.stringify(data, null, 2), 'utf8');
+}
+
+// Helper to read metrics
+function readMetrics() {
+  if (fs.existsSync(METRICS_FILE)) {
+    return JSON.parse(fs.readFileSync(METRICS_FILE, 'utf8'));
+  }
+  return { enter: 0, leave: 0, whatsapp: 0, form: 0, invalid_lead: 0 };
+}
+
+// Helper to write metrics
+function updateMetric(action) {
+  const metrics = readMetrics();
+  if (metrics[action] !== undefined) {
+    metrics[action]++;
+    fs.writeFileSync(METRICS_FILE, JSON.stringify(metrics, null, 2), 'utf8');
+  } else if (action === 'invalid_lead') {
+    metrics['invalid_lead'] = 1;
+    fs.writeFileSync(METRICS_FILE, JSON.stringify(metrics, null, 2), 'utf8');
+  }
+}
+
+// API Endpoint for frontend
+app.get('/api/config', (req, res) => {
+  const config = readConfig();
+  res.json(config);
+});
+
+// Telegram Bot Setup
+const botToken = process.env.BOT_TOKEN;
+let adminId = process.env.ADMIN_ID ? parseInt(process.env.ADMIN_ID, 10) : null;
+
+if (botToken) {
+  const bot = new Telegraf(botToken);
+
+  bot.use((ctx, next) => {
+    // Se o adminId não estiver configurado no .env, vincula ao primeiro usuário que interagir
+    if (!adminId && ctx.from) {
+      adminId = ctx.from.id;
+      console.log(`[Bot Telegram] Admin identificado e vinculado com sucesso: ID ${adminId} (${ctx.from.first_name || ''})`);
+    }
+
+    if (ctx.from && ctx.from.id === adminId) {
+      return next();
+    }
+  });
+
+  const getDashboard = () => {
+    const config = readConfig();
+    const tel1 = formatPhone(config.whatsapp);
+    const tel2 = config.whatsapp2 ? formatPhone(config.whatsapp2) : 'Não configurado (1 número ativo)';
+    return {
+      text: `📊 *Dashboard de Controle - Cortesia Concreto*\n\n` +
+        `🟢 *Status do Sistema:* Online & Blindado\n` +
+        `🌐 *Domínio Oficial:* \`${config.domain || 'www.cortesiaconcreto.com.br'}\`\n` +
+        `📱 *Telefone 1 (Principal):* \`${tel1}\`\n` +
+        `📱 *Telefone 2 (Secundário):* \`${tel2}\`\n` +
+        `✉️ *E-mail Oficial:* \`${config.email}\`\n\n` +
+        `🖼️ *Pop-up de Entrada:* Imagem Gerada Ativa no Site`,
+      markup: Markup.inlineKeyboard([
+        [Markup.button.callback('🖼️ Gerar / Atualizar Imagem Pop-up', 'action_generate_banner')],
+        [Markup.button.callback('🌐 Alterar Domínio', 'action_edit_domain'), Markup.button.callback('✉️ Alterar E-mail', 'action_edit_email')],
+        [Markup.button.callback('📱 Alterar Telefone 1', 'action_edit_whatsapp'), Markup.button.callback('📱 Configurar Telefone 2', 'action_edit_whatsapp2')],
+        [Markup.button.callback('📈 Relatórios de Leads', 'action_reports')]
+      ])
+    };
+  };
+
+  bot.start((ctx) => {
+    const dashboard = getDashboard();
+    ctx.replyWithMarkdown(dashboard.text, dashboard.markup);
+  });
+
+  bot.command('dashboard', (ctx) => {
+    const dashboard = getDashboard();
+    ctx.replyWithMarkdown(dashboard.text, dashboard.markup);
+  });
+
+  bot.command('gerar', async (ctx) => {
+    await handleImageRegeneration(ctx);
+  });
+
+  const state = {};
+
+  async function handleImageRegeneration(ctx) {
+    try {
+      const waitMsg = await ctx.reply('🎨 *Processando Imagem com IA...*\nRenderizando imagem idêntica com os canais oficiais atualizados.', { parse_mode: 'Markdown' });
+      const config = readConfig();
+      const imgPath = path.join(__dirname, 'images', 'comunicado-de-fraude-2.jpg');
+
+      await generateFraudAlertImage({
+        domain: config.domain,
+        phone1: config.whatsapp,
+        phone2: config.whatsapp2 || null,
+        outputPath: imgPath
+      });
+
+      if (ctx.telegram && waitMsg) {
+        ctx.telegram.deleteMessage(ctx.chat.id, waitMsg.message_id).catch(() => { });
+      }
+
+      await ctx.replyWithPhoto({ source: imgPath }, {
+        caption: `✅ *Imagem de Prevenção de Fraudes Gerada com Sucesso!*\n\n` +
+          `🌐 *Domínio:* ${config.domain}\n` +
+          `📱 *Telefone 1:* ${formatPhone(config.whatsapp)}\n` +
+          `📱 *Telefone 2:* ${config.whatsapp2 ? formatPhone(config.whatsapp2) : 'Desativado (Apenas 1 número)'}\n` +
+          `✉️ *E-mail:* ${config.email}\n\n` +
+          `🚀 *Esta imagem já está ativa como pop-up de entrada de todos os leads no site!*`,
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([[Markup.button.callback('🔙 Voltar ao Painel', 'action_back_menu')]])
+      });
+    } catch (err) {
+      console.error('Erro na geração da imagem:', err);
+      ctx.reply('❌ Ocorreu um erro ao gerar a imagem: ' + err.message);
+    }
+  }
+
+  bot.action('action_reports', (ctx) => {
+    const metrics = readMetrics();
+    const reportText = `📈 *Relatório de Métricas - Inteligência Empresarial*\n\n` +
+      `🟢 *Acessos ao Site:* ${metrics.enter}\n` +
+      `🔴 *Saídas do Site:* ${metrics.leave}\n` +
+      `📱 *Cliques no WhatsApp:* ${metrics.whatsapp}\n` +
+      `📋 *Formulários Preenchidos:* ${metrics.form}\n` +
+      `🛑 *Robôs/Estrangeiros Bloqueados:* ${metrics.invalid_lead || 0}\n\n` +
+      `_Dados coletados com segurança._`;
+
+    ctx.replyWithMarkdown(reportText, Markup.inlineKeyboard([
+      [Markup.button.callback('🔙 Voltar ao Menu', 'action_back_menu')]
+    ]));
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_back_menu', (ctx) => {
+    const dashboard = getDashboard();
+    ctx.editMessageText(dashboard.text, { parse_mode: 'Markdown', ...dashboard.markup });
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_generate_banner', async (ctx) => {
+    ctx.answerCbQuery();
+    await handleImageRegeneration(ctx);
+  });
+
+  bot.action('action_edit_domain', (ctx) => {
+    state[ctx.from.id] = 'awaiting_domain';
+    ctx.reply('Envie o novo Domínio Oficial que deve aparecer na imagem e no site.\nExemplo: `www.cortesiaconcreto.com.br` ou `cortesiaconcreto.com.br`', { parse_mode: 'Markdown' });
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_edit_whatsapp', (ctx) => {
+    state[ctx.from.id] = 'awaiting_whatsapp';
+    ctx.reply('Envie o Telefone 1 (Principal) com DDD (somente números ou formatado).\nEx: `11 2916-3000` ou `551129163000`', { parse_mode: 'Markdown' });
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_edit_whatsapp2', (ctx) => {
+    ctx.reply('Como deseja configurar o Telefone 2 (Secundário)?', Markup.inlineKeyboard([
+      [Markup.button.callback('✏️ Informar Número do Telefone 2', 'action_set_phone2')],
+      [Markup.button.callback('🚫 Deixar Apenas 1 Telefone na Imagem', 'action_remove_phone2')],
+      [Markup.button.callback('🔙 Voltar', 'action_back_menu')]
+    ]));
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_set_phone2', (ctx) => {
+    state[ctx.from.id] = 'awaiting_whatsapp2';
+    ctx.reply('Envie o Telefone 2 com DDD:\nEx: `11 2916-3000` ou `551129163000`', { parse_mode: 'Markdown' });
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_remove_phone2', async (ctx) => {
+    const config = readConfig();
+    delete config.whatsapp2;
+    writeConfig(config);
+    ctx.answerCbQuery();
+    await ctx.reply('✅ O Telefone 2 foi desativado. A imagem exibirá apenas 1 telefone seguro.');
+    await handleImageRegeneration(ctx);
+  });
+
+  bot.action('action_edit_email', (ctx) => {
+    state[ctx.from.id] = 'awaiting_email';
+    ctx.reply('Envie o novo e-mail oficial de contato:');
+    ctx.answerCbQuery();
+  });
+
+  bot.on('text', async (ctx) => {
+    const userState = state[ctx.from.id];
+    const text = ctx.message.text.trim();
+
+    // Reconhecimento inteligente livre (Ex: o admin envia dados completos em uma única mensagem)
+    if (!userState) {
+      // Se o usuário digitou comando direto ou formato com múltiplos dados
+      const emailMatch = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+      const domainMatch = text.match(/(?:https?:\/\/)?(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?/);
+      const phonesMatch = text.match(/(?:\+?55\s?)?(?:\(?\d{2}\)?\s?)?\d{4,5}-?\d{4}/g);
+
+      if (emailMatch || domainMatch || (phonesMatch && phonesMatch.length > 0)) {
+        const config = readConfig();
+        if (emailMatch) config.email = emailMatch[0].toUpperCase();
+        if (domainMatch && !domainMatch[0].includes('@')) {
+          config.domain = domainMatch[0].replace(/^https?:\/\//, '').toLowerCase();
+        }
+        if (phonesMatch && phonesMatch[0]) {
+          config.whatsapp = phonesMatch[0].replace(/\D/g, '');
+        }
+        if (phonesMatch && phonesMatch[1]) {
+          config.whatsapp2 = phonesMatch[1].replace(/\D/g, '');
+        }
+        writeConfig(config);
+
+        await ctx.reply('🧠 *Entrada Inteligente Detectada!*\nDados validados e atualizados com sucesso.', { parse_mode: 'Markdown' });
+        await handleImageRegeneration(ctx);
+        return;
+      }
+      return;
+    }
+
+    if (userState === 'awaiting_domain') {
+      const cleanDom = text.replace(/^https?:\/\//, '').toLowerCase();
+      if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(cleanDom)) {
+        const config = readConfig();
+        config.domain = cleanDom;
+        writeConfig(config);
+        state[ctx.from.id] = null;
+        await ctx.reply('✅ Domínio atualizado com sucesso!');
+        await handleImageRegeneration(ctx);
+      } else {
+        ctx.reply('❌ Formato de domínio inválido. Tente novamente (ex: `www.cortesiaconcreto.com.br`).', { parse_mode: 'Markdown' });
+      }
+    } else if (userState === 'awaiting_whatsapp') {
+      const digits = text.replace(/\D/g, '');
+      if (digits.length >= 8) {
+        const config = readConfig();
+        config.whatsapp = digits;
+        writeConfig(config);
+        state[ctx.from.id] = null;
+        await ctx.reply('✅ Telefone 1 atualizado com sucesso!');
+        await handleImageRegeneration(ctx);
+      } else {
+        ctx.reply('❌ Formato inválido. Envie um número válido com DDD.');
+      }
+    } else if (userState === 'awaiting_whatsapp2') {
+      const digits = text.replace(/\D/g, '');
+      if (digits.length >= 8) {
+        const config = readConfig();
+        config.whatsapp2 = digits;
+        writeConfig(config);
+        state[ctx.from.id] = null;
+        await ctx.reply('✅ Telefone 2 atualizado com sucesso!');
+        await handleImageRegeneration(ctx);
+      } else {
+        ctx.reply('❌ Formato inválido. Envie um número válido com DDD.');
+      }
+    } else if (userState === 'awaiting_email') {
+      if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
+        const config = readConfig();
+        config.email = text.toUpperCase();
+        writeConfig(config);
+        state[ctx.from.id] = null;
+        await ctx.reply('✅ E-mail oficial atualizado com sucesso!');
+        await handleImageRegeneration(ctx);
+      } else {
+        ctx.reply('❌ Formato de e-mail inválido. Tente novamente.');
+      }
+    }
+  });
+
+  bot.launch();
+  console.log('Telegram bot started.');
+
+  app.post('/api/leads', (req, res) => {
+    const { action, details, metadata } = req.body || {};
+    let message = '';
+    const nowBR = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+    // Validate action to prevent pollution
+    if (['enter', 'leave', 'whatsapp', 'form', 'invalid_lead'].includes(action)) {
+      updateMetric(action);
+    }
+
+    switch (action) {
+      case 'enter':
+        message = `🟢 *NOVO ACESSO IDENTIFICADO*\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📅 *Data/Hora:* ${nowBR}\n` +
+          `📍 *Origem:* ${details || 'Brasil (IP Validado)'}\n` +
+          `🛡️ *Status:* Navegação Humana Autenticada`;
+        break;
+
+      case 'leave':
+        message = `⚪ *SESSÃO ENCERRADA*\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📅 *Data/Hora:* ${nowBR}\n` +
+          `ℹ️ *Info:* ${details || 'Usuário encerrou a sessão no site'}`;
+        break;
+
+      case 'whatsapp':
+        message = `📲 *LEAD DIRECIONADO PARA O WHATSAPP*\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📅 *Horário:* ${nowBR}\n` +
+          `🎯 *Ação Executada:* ${details || 'Clique em botão de contato'}\n` +
+          (metadata && metadata.context ? `🏢 *Contexto/Seção:* ${metadata.context}\n` : '') +
+          (metadata && metadata.generatedMessage ? `💬 *Mensagem Pronta Gerada:*\n_${metadata.generatedMessage}_\n` : '') +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `⚡ *Status:* Oportunidade pronta para atendimento no WhatsApp.`;
+        break;
+
+      case 'form':
+        message = `📋 *NOVA SOLICITAÇÃO DE ORÇAMENTO*\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📅 *Horário:* ${nowBR}\n` +
+          `${details || 'Dados não informados'}\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `💼 *Ação Recomendada:* Entrar em contato imediato para fechamento.`;
+        break;
+
+      case 'invalid_lead':
+        message = `🚨 *TRÁFEGO ANÔMALO / BOT BLOQUEADO*\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📅 *Horário:* ${nowBR}\n` +
+          `🛡️ *Motivo:* ${details || 'Invasão ou crawler interceptado'}\n` +
+          `🔒 *Ação:* Acesso sumariamente revogado pelo sistema.`;
+        break;
+
+      default:
+        return res.status(400).json({ error: 'Ação inválida' });
+    }
+
+    bot.telegram.sendMessage(adminId, message, { parse_mode: 'Markdown' })
+      .catch(err => console.error('Error sending lead to Telegram:', err));
+
+    res.json({ success: true, blindado: true });
+  });
+
+} else {
+  console.warn('BOT_TOKEN not provided in .env.');
+}
+
+// Redirecionamento de Fallback Inteligente para WhatsApp em páginas ou arquivos ausentes (.html, .php, .pdf)
+app.use((req, res, next) => {
+  if (req.method === 'GET' && !req.path.startsWith('/api/')) {
+    const config = readConfig();
+    const cleanWa = (config.whatsapp || '551129163000').replace(/\D/g, '');
+    const cleanPath = decodeURIComponent(req.path).replace(/[/\\._-]/g, ' ').trim();
+    const msg = encodeURIComponent(`Olá! Gostaria de atendimento comercial e informações a respeito de "${cleanPath || 'Cortesia Concreto'}". Poderia me orientar?`);
+    return res.redirect(`https://api.whatsapp.com/send?phone=${cleanWa}&text=${msg}`);
+  }
+  next();
+});
+
+const PORT = process.env.PORT || 3000;
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT} with advanced security.`);
+  });
+}
+
+module.exports = app;

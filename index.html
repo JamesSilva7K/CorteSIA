@@ -1,0 +1,1720 @@
+<!--?php
+
+//orçamento
+
+require"includes-acoes/orcamento/orcamento.php";
+
+?--><!DOCTYPE html><html lang="pt-BR"><head>
+
+		<meta charset="utf-8">
+
+		<title>Cortesia Concreto</title>
+		
+		<style>
+			/* Estilo para o fundo escuro da janela modal */
+			.modal-background {
+				display: none;
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(0, 0, 0, 0.7);
+				justify-content: center;
+				align-items: center;
+				z-index: 1000; /* Valor alto para garantir que fique acima de outros elementos */
+			}
+
+			/* Estilo para a janela modal */
+			.modal-content {
+				background-color: #fff;
+				/*padding: 20px;
+				border-radius: 5px;*/
+				text-align: center;
+				position: relative;
+				z-index: 1000; /* Valor maior que o da modal-background */
+			}
+
+			/* Estilo para a imagem dentro da janela modal */
+			.modal-content img {
+				max-width: 100%;
+				max-height: 80vh;
+			}
+
+			/* Blindagem Anti-Cópia */
+			body {
+				-webkit-user-select: none;
+				-moz-user-select: none;
+				-ms-user-select: none;
+				user-select: none;
+			}
+		</style>
+
+		<meta name="description" content="Cortesia Concreto
+
+
+Acreditando no potencial de nosso país, a Cortesia entrou no mercado de concreto dosado em central com o compromisso de oferecer serviços com qualidade, segurança e pontualidade a todos os clientes.
+
+
+Empresa especializada na locação de equipamentos para construção civil. Betoneiras, guindastes, arrasador de estacas, caminhão munk, etc. Tels.: (11) 2916-3000 /vendas@cortesiaconcreto.com.br">
+
+<meta name="keywords" content="betonera, betoneira, betoneras, betoneiras, concreto cortesia, cortesia concreto, guindaste, guindastes, bomba de concreto, aluguel de betoneira, aluguel de betonera, aluguel betonera, aluguel betoneira, bomba concreto, bomba lança, bomba lanca, estaca hélice, estaca élice, perfuratriz, concreto usinado, concreto leve, concreto dosado, usina de concreto, silo, guindaste hidráulico,  guindaste hidraulico, estaca helice continua, estaca hélice, estaca hélice segmentada, estaca helicoidal, aluguel betoneira preço, locação de betoneira preço, fundação de obras, fundação de obras civis, equipamentos para obras civis, equipamentos para  construção civil, equipamento para construção civil, equipamento para construção civil, locação construção civil, aluguel  de equipamentos para construção civil, bomba  lança  concreto, bomba lança shwing, caminhão lança concreto, locação bomba lança, bomba estacionária, bomba estacionaria, caminhão munck, caminhão munck locação, caminhao  guindauto, caminhão guindauto, guindaste, guindastes, guindaste hidraulico, guindaste aluguel, guindaste locação, guindaste para locacao, aluguel guindaste, aluguel guindaste preço, aluguel guindaste valor, guindaste aluguel, guindaste cortesia, usina concreto, usina dosadora, usina dosadora de concreto, usina misturadora de concreto, central misturadora concreto,  içamento de cargas, içamento de cargas com munck, içamento de cargas com guindaste, transporte pesado, transportes pesados, estudos de rigging, estudos de rigging engenheiro, estudos de rigging engenharia, estudos de rigging e art, montagem industrial,
+vistoria técnica, vistoria tecnica de engenharia, vistoria técnica de edificações, vistoria técnica de engenharia, vistoria tecnica de edificações, estaca helice monitorada, estaca helice monitorada, estaca helice continua custo, estaca helice continua execução, estaca helice continua vantagens, arrasador estacas, arrasador de estacas, arrasador de estacas prancha, arrasador de estacas pré-moldadas, auto bomba, auto bomba concreto, guindaste sobre rodas, guindaste sobre rodas telescópio, guindaste sobre rodas telescopio, guindaste hidraulico aluguel, guindaste hidráulico veicular, aluguel guindaste hidráulico, locação guindaste hidraulico, usina dosadora agregados, usina togo, usina togo concreto, usina towgo rasga saco, usina togo rasga saco, montagem usina de concreto, montagem usina de hidrelétrica, montagem usina de hidrelétrica, montagem usina de siderurgia, montagem usina de siderúrgica, montagem usina de siderurgica, montagem industrial, montagem industria química, montagem industria quimica, montagem indústria química, montagens industriais
+">
+
+<meta http-equiv="content-language" content="pt-br">
+
+<meta name="author" content="Arteh Propaganda">
+
+<meta name="format-detection" content="telephone=no">
+
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+
+		<!--[if IE]><meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'><![endif]-->
+
+
+
+		<!-- Favicone Icon -->
+
+		<link rel="shortcut icon" href="images/favicon.png" type="image/x-icon">
+
+
+
+		<!-- CSS -->
+
+		<link href="https://fonts.googleapis.com/css?family=lato:400,100,200,300,500%7COpen+Sans:400,300,600,700,800%7COswald:300,400,700" rel="stylesheet" type="text/css">
+
+		<link href="css/bootstrap.css" rel="stylesheet" type="text/css">
+
+		<link href="css/font-awesome.css" rel="stylesheet" type="text/css">
+
+		<link href="css/ionicons.css" rel="stylesheet" type="text/css">
+
+		<!-- carousel -->
+
+		<link href="css/owl.carousel.css" rel="stylesheet" type="text/css">
+
+		<link href="css/owl.transitions.css" rel="stylesheet" type="text/css">
+
+		<!--Main Slider-->
+
+		<link href="css/settings.css" type="text/css" rel="stylesheet" media="screen">
+
+		<link href="css/layers.css" type="text/css" rel="stylesheet" media="screen">
+
+		<!--Main Style-->
+
+		<link href="css/style.css" rel="stylesheet" type="text/css">
+
+        <!--Theme Color-->
+
+		<link href="css/default.css" rel="stylesheet" id="theme-color" type="text/css">
+
+<script async="" src="js/gtm.js"></script><script async="" src="js/analytics.js"></script><script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-51498507-1', 'cortesiaconcreto.com.br');
+  ga('send', 'pageview');
+
+</script>
+
+<!-- Google Tag Manager -->
+
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+
+})(window,document,'script','dataLayer','GTM-T8RMG3F');</script>
+
+<!-- End Google Tag Manager -->
+
+
+
+</head>
+<body>
+<!--
+<a href="javascript:newPopup()">Abrir popup</a>
+-->
+	
+	
+<!-- Janela modal -->
+	<div id="myModal" class="modal-background" style="display: flex;">
+		<div class="modal-content">
+			<img id="modalFraudeImg" src="images/comunicado-de-fraude-2.jpg" alt="Comunicado Prevenção de Fraudes">
+		</div>
+	</div>
+
+	<script>
+		// Função para exibir a janela modal quando a página é carregada com cache-busting
+		window.onload = function() {
+			const mImg = document.getElementById('modalFraudeImg');
+			if (mImg) mImg.src = 'images/comunicado-de-fraude-2.jpg?v=' + Date.now();
+			document.getElementById('myModal').style.display = 'flex';
+		};
+
+		// Função para fechar a janela modal quando a imagem é clicada
+		document.getElementById('myModal').onclick = function() {
+			this.style.display = 'none';
+		};
+	</script>
+<!-- Janela modal -->
+
+
+	
+
+	
+
+    <!--loader-->
+
+<div id="preloader">
+
+  <div class="sk-circle">
+
+    <div class="sk-circle1 sk-child"></div>
+
+    <div class="sk-circle2 sk-child"></div>
+
+    <div class="sk-circle3 sk-child"></div>
+
+    <div class="sk-circle4 sk-child"></div>
+
+    <div class="sk-circle5 sk-child"></div>
+
+    <div class="sk-circle6 sk-child"></div>
+
+    <div class="sk-circle7 sk-child"></div>
+
+    <div class="sk-circle8 sk-child"></div>
+
+    <div class="sk-circle9 sk-child"></div>
+
+    <div class="sk-circle10 sk-child"></div>
+
+    <div class="sk-circle11 sk-child"></div>
+
+    <div class="sk-circle12 sk-child"></div>
+
+  </div>
+
+</div>
+
+<!--loader-->
+
+		<!-- Site Wraper -->
+
+		<div class="wrapper">
+
+			<!-- HEADER -->
+
+			<header id="header" class="header header-2" style="background-color:#e4e4e4">
+
+				<div id="top-bar" class="top-bar-section top-bar-bg-color">
+
+					<div class="container">
+
+						<div class="row">
+
+							<div class="col-sm-12">
+
+								<!-- Top Contact -->
+
+
+
+								<!-- Top Social Icon -->
+
+
+
+
+<h3>CANAIS DE VENDAS:<b> WHATSAPP:</b> <a data-dynamic-contact="whatsapp-link" href="https://api.whatsapp.com/send?phone=551129163000"> <img src="images/whatsapp.png" alt=""> </a><span data-dynamic-contact="whatsapp-text">11 2916-3000</span>    |    E-MAIL: <b data-dynamic-contact="email-text">VENDAS@CORTESIACONCRETO.COM.BR</b></h3>
+<script src="js/dynamic-config.js"></script>
+
+
+
+
+
+
+						<div class="top-contact link-hover-black">
+
+									<strong class="welcome-text"> <b>Vila Prudente:</b> 11 2916-3000 | <b>Barueri:</b> 11 4772-4747 | <b>Jaguaré:</b> 11 3760-3000 | <b>Caçapava:</b> 12 3654-3300
+
+ <b>Santos:</b> 13 3295-3300 | <b>Atibaia:</b> 11 3181-4400 | <b>Mogi das Cruzes:</b> 11 4791-7740 <br>
+
+ <b>  </b></strong><b><br>
+
+
+
+								</b></div><b>
+
+
+
+							</b></div><b>
+
+						</b></div><b>
+
+					</b></div><b>
+
+				</b></div><b>
+
+
+                <p class="warning-banner">Bem vindos ao <b>SITE OFICIAL DA CORTESIA CONCRETO</b> - <a href="https://cortesiaconcreto.com.br">cortesiaconcreto.com.br</a></p>
+
+				<div>
+
+				  <img src="images/topoconcreto.png" id="logo1" alt="">
+				  <img src="images/topo_novo.png" id="logo2" alt="">
+
+				  <button id="menu" class="menu visible-xs" title="Menu" aria-label="Menu"></button>
+
+			  </div>
+
+
+
+
+
+
+
+			  <div class="primary-header">
+
+					<div class="container">
+
+						<div class="row">
+
+							<div class="col-sm-12">
+
+								<nav class="navigation">
+
+									<ul>
+
+                <li> <a href="index.html">Home</a> </li>
+
+
+
+              <li> <a href="#">Sobre</a>
+                                            <ul class="sub-nav">
+                                                <li><a href="cortesia-concreto-grupo-cortesia.html">Usinas</a></li>
+                                                <li><a href="cortesia-concreto-atuacoes.html">O que Fazemos?</a></li>
+                                                <li><a href="cortesia-concreto-controle-tecnologico.html">Controle Tecnológico</a></li>
+                                            </ul>
+                                        </li>
+
+
+
+										  
+
+										  <li> <a href="cortesia-concreto-caminhao-betoneira.html">Frota</a> </li>
+
+
+
+
+
+
+
+
+
+										   <li> <a href="cortesia-concreto-produtos.html">Produtos</a>
+
+                 <ul class="sub-nav">
+
+              <li><a href="cortesia-concreto-concreto-convencional.html">Concreto Convencional</a></li>
+
+               <li><a href="cortesia-concreto-concreto-bombeavel.html">Concreto Bombeável</a></li>
+
+                <li><a href="cortesia-concreto-concreto-especial.html">Concretos Especiais</a></li>
+
+                              </ul>
+
+                </li>
+
+
+
+
+
+										  <li> <a href="cortesia-concreto-grande-obras.html">Nossas Obras</a> </li>
+
+										  <li> <a href="vaga-mecanico-diesel-caminhoes-pesados.html">Vagas</a> </li> <li> <a href="cortesia-concreto-contato.html">Contato</a> </li>
+
+
+
+
+
+              </ul>
+
+								</nav>
+
+							</div>
+
+
+
+						</div>
+
+					</div>
+
+			  </div>
+
+			</b></header><b>
+
+			<!-- END HEADER -->
+
+			<!--  Main Banner Start Here-->
+
+			<div class="main-banner">
+
+				<div id="rev_slider_34_1_wrapper" class="rev_slider_wrapper" data-alias="news-gallery34">
+
+					<!-- START REVOLUTION SLIDER 5.0.7 fullwidth mode -->
+
+					<div id="rev_slider_34_1" class="rev_slider" data-version="5.0.7">
+
+						<ul>
+
+
+
+
+							<li data-index="rs-128" onclick="window.open('https://www.cortesiaequipamentos.com.br/','_blank');" style="cursor: pointer;">
+                             >
+
+								<!-- MAIN IMAGE -->
+
+                                <img src="images/site-novo.png" alt="" class="rev-slidebg">
+                                >
+
+								<!-- LAYERS -->
+
+
+
+								<!-- LAYER NR. 2 -->
+
+								<div class="tp-caption Newspaper-Title tp-resizeme " id="slide-129-layer-1" data-x="['left','left','left','left']" data-hoffset="['100','50','50','30']" data-y="['top','top','top','center']" data-voffset="['165','135','105','0']" data-fontsize="['50','50','50','30']" data-lineheight="['55','55','55','35']" data-width="['600','600','600','420']" data-height="none" data-whitespace="normal" data-transform_idle="o:1;" data-transform_in="y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;s:1500;e:Power3.easeInOut;" data-transform_out="auto:auto;s:1000;e:Power3.easeInOut;" data-mask_in="x:0px;y:0px;s:inherit;e:inherit;" data-mask_out="x:0;y:0;s:inherit;e:inherit;" data-start="1000" data-splitin="none" data-splitout="none" data-responsive_offset="on">
+
+
+
+								</div>
+
+							</li>
+
+							<li data-index="rs-129">
+
+								<!-- MAIN IMAGE -->
+
+								<img src="images/infraestrutura.jpg" alt="" class="rev-slidebg">
+
+								<!-- LAYERS -->
+
+
+
+								<!-- LAYER NR. 2 -->
+
+								<div class="tp-caption Newspaper-Title tp-resizeme " id="slide-129-layer-1" data-x="['left','left','left','left']" data-hoffset="['100','50','50','30']" data-y="['top','top','top','center']" data-voffset="['165','135','105','0']" data-fontsize="['50','50','50','30']" data-lineheight="['55','55','55','35']" data-width="['600','600','600','420']" data-height="none" data-whitespace="normal" data-transform_idle="o:1;" data-transform_in="y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;s:1500;e:Power3.easeInOut;" data-transform_out="auto:auto;s:1000;e:Power3.easeInOut;" data-mask_in="x:0px;y:0px;s:inherit;e:inherit;" data-mask_out="x:0;y:0;s:inherit;e:inherit;" data-start="1000" data-splitin="none" data-splitout="none" data-responsive_offset="on">
+
+
+
+								</div>
+
+							</li>
+
+							<!-- SLIDE  -->
+
+							<li data-index="rs-130" data-title="" data-description="">
+
+								<!-- MAIN IMAGE -->
+
+								<img src="images/2_2.jpg" alt="" class="rev-slidebg">
+
+								<!-- LAYERS -->
+
+
+
+								<!-- LAYER NR. 2 -->
+
+								<div class="tp-caption Newspaper-Title   tp-resizeme " id="slide-130-layer-1" data-x="['left','left','left','left']" data-hoffset="['100','50','50','30']" data-y="['top','top','top','center']" data-voffset="['165','135','105','0']" data-fontsize="['50','50','50','30']" data-lineheight="['55','55','55','35']" data-width="['600','600','600','420']" data-height="none" data-whitespace="normal" data-transform_idle="o:1;" data-transform_in="y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;s:1500;e:Power3.easeInOut;" data-transform_out="auto:auto;s:1000;e:Power3.easeInOut;" data-mask_in="x:0px;y:0px;s:inherit;e:inherit;" data-mask_out="x:0;y:0;s:inherit;e:inherit;" data-start="1000" data-splitin="none" data-splitout="none" data-responsive_offset="on">
+
+
+
+								</div>
+
+							</li>
+
+							<!-- SLIDE  -->
+
+							<li data-index="rs-131">
+
+								<!-- MAIN IMAGE -->
+
+								<img src="images/3_2.jpg" alt="" class="rev-slidebg ">
+
+								<!-- LAYERS -->
+
+
+
+								<!-- LAYER NR. 2 -->
+
+								<div class="tp-caption Newspaper-Title   tp-resizeme " id="slide-131-layer-1" data-x="['left','left','left','left']" data-hoffset="['100','50','50','30']" data-y="['top','top','top','center']" data-voffset="['165','135','105','0']" data-fontsize="['50','50','50','30']" data-lineheight="['55','55','55','35']" data-width="['600','600','600','420']" data-height="none" data-whitespace="normal" data-transform_idle="o:1;" data-transform_in="y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;s:1500;e:Power3.easeInOut;" data-transform_out="auto:auto;s:1000;e:Power3.easeInOut;" data-mask_in="x:0px;y:0px;s:inherit;e:inherit;" data-mask_out="x:0;y:0;s:inherit;e:inherit;" data-start="1000" data-splitin="none" data-splitout="none" data-responsive_offset="on">
+
+
+
+								</div>
+
+							</li>
+
+							<!-- SLIDE  -->
+
+
+
+							<!-- SLIDE  -->
+
+							<li data-index="rs-130" data-title="" data-description="">
+
+								<!-- MAIN IMAGE -->
+
+								<img src="images/4.jpg" alt="" class="rev-slidebg">
+
+								<!-- LAYERS -->
+
+
+
+								<!-- LAYER NR. 2 -->
+
+								<div class="tp-caption Newspaper-Title   tp-resizeme " id="slide-130-layer-1" data-x="['left','left','left','left']" data-hoffset="['100','50','50','30']" data-y="['top','top','top','center']" data-voffset="['165','135','105','0']" data-fontsize="['50','50','50','30']" data-lineheight="['55','55','55','35']" data-width="['600','600','600','420']" data-height="none" data-whitespace="normal" data-transform_idle="o:1;" data-transform_in="y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;s:1500;e:Power3.easeInOut;" data-transform_out="auto:auto;s:1000;e:Power3.easeInOut;" data-mask_in="x:0px;y:0px;s:inherit;e:inherit;" data-mask_out="x:0;y:0;s:inherit;e:inherit;" data-start="1000" data-splitin="none" data-splitout="none" data-responsive_offset="on">
+
+
+
+								</div>
+
+							</li>
+
+
+
+							<!-- SLIDE  -->
+
+							<li data-index="rs-130" data-title="" data-description="">
+
+								<!-- MAIN IMAGE -->
+
+								<img src="images/5.jpg" alt="" class="rev-slidebg">
+
+								<!-- LAYERS -->
+
+
+
+								<!-- LAYER NR. 2 -->
+
+								<div class="tp-caption Newspaper-Title   tp-resizeme " id="slide-130-layer-1" data-x="['left','left','left','left']" data-hoffset="['100','50','50','30']" data-y="['top','top','top','center']" data-voffset="['165','135','105','0']" data-fontsize="['50','50','50','30']" data-lineheight="['55','55','55','35']" data-width="['600','600','600','420']" data-height="none" data-whitespace="normal" data-transform_idle="o:1;" data-transform_in="y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;s:1500;e:Power3.easeInOut;" data-transform_out="auto:auto;s:1000;e:Power3.easeInOut;" data-mask_in="x:0px;y:0px;s:inherit;e:inherit;" data-mask_out="x:0;y:0;s:inherit;e:inherit;" data-start="1000" data-splitin="none" data-splitout="none" data-responsive_offset="on">
+
+
+
+								</div>
+
+							</li>
+
+
+
+							<!-- SLIDE  -->
+
+							<li data-index="rs-130" data-title="" data-description="">
+
+								<!-- MAIN IMAGE -->
+
+								<img src="images/6_1.jpg" alt="" class="rev-slidebg">
+
+								<!-- LAYERS -->
+
+
+
+								<!-- LAYER NR. 2 -->
+
+								<div class="tp-caption Newspaper-Title   tp-resizeme " id="slide-130-layer-1" data-x="['left','left','left','left']" data-hoffset="['100','50','50','30']" data-y="['top','top','top','center']" data-voffset="['165','135','105','0']" data-fontsize="['50','50','50','30']" data-lineheight="['55','55','55','35']" data-width="['600','600','600','420']" data-height="none" data-whitespace="normal" data-transform_idle="o:1;" data-transform_in="y:[-100%];z:0;rX:0deg;rY:0;rZ:0;sX:1;sY:1;skX:0;skY:0;s:1500;e:Power3.easeInOut;" data-transform_out="auto:auto;s:1000;e:Power3.easeInOut;" data-mask_in="x:0px;y:0px;s:inherit;e:inherit;" data-mask_out="x:0;y:0;s:inherit;e:inherit;" data-start="1000" data-splitin="none" data-splitout="none" data-responsive_offset="on">
+
+
+
+								</div>
+
+							</li>
+
+
+
+						</ul>
+
+						<div class="tp-bannertimer tp-bottom"></div>
+
+					</div>
+
+				</div>
+
+
+
+			</div>
+
+			<!--  Main Banner End Here-->
+
+
+
+
+
+				 <div id="blog-section" class="ptb ptb-xs-60" style="background-color:#ffd600">
+
+    <div class="container">
+
+      <div class="row ">
+
+        <div class="col-sm-12">
+
+          <div class="block-title mb-35 v-line">
+
+            <h2><span>Nossos</span> Concretos</h2>
+
+            <p class="italic"> Confira os tipos de concreto que fornecemos para obras: </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="row">
+
+        <div class="col-sm-4 mb-xs-30">
+
+          <div class="blog-post">
+
+            <div class="post-media"> <img src="images/img1.jpg" class="img-responsive" alt=""> </div>
+
+
+
+            <div class="post-header">
+
+              <h4><a href="cortesia-concreto-concreto-convencional.html">CONCRETO CONVENCIONAL</a></h4>
+
+            </div>
+
+            <div class="post-entry">
+
+              <p> É utilizado em obras corriqueiras de  aplicação normal, ou seja, não  requer qualquer tipo de equipamento (bomba) para disposição final. Normalmente  este concreto é de pouca trabalhabilidade...<i>(continue lendo)</i>   </p>
+
+            </div>
+
+            <div class="post-more-link pull-left"> <a href="cortesia-concreto-concreto-convencional.html" class="btn-text">Saiba Mais</a> </div>
+
+          </div>
+
+        </div>
+
+        <div class="col-sm-4 mb-xs-30">
+
+          <div class="blog-post">
+
+            <div class="post-media"> <img src="images/2.jpg" class="img-responsive" alt=""> </div>
+
+
+
+            <div class="post-header">
+
+              <h4><a href="cortesia-concreto-concreto-bombeavel.html">CONCRETO BOMBEÁVEL</a></h4>
+
+            </div>
+
+            <div class="post-entry">
+
+              <p>
+
+
+
+
+
+Pode-se definir concreto bombeável  como o concreto transportado por pressão através de tubos rígidos ou mangueiras  flexíveis e descarregado diretamente  ou próximos dos pontos onde deve ser  aplicado...<i>(continue lendo)</i>  </p>
+
+            </div>
+
+            <div class="post-more-link pull-left"> <a href="cortesia-concreto-concreto-bombeavel.html" class="btn-text">Saiba Mais</a> </div>
+
+          </div>
+
+        </div>
+
+       <div class="col-sm-4 mb-xs-30">
+
+          <div class="blog-post">
+
+            <div class="post-media"> <img src="images/3_1.jpg" class="img-responsive" alt=""> </div>
+
+
+
+            <div class="post-header">
+
+              <h4><a href="cortesia-concreto-concreto-especial.html">CONCRETOS ESPECIAIS</a></h4>
+
+            </div>
+
+            <div class="post-entry">
+
+              <p> Tomaremos como definição de concretos especiais àqueles excluídos das condições ao lado citadas. Concretos  com diferentes slumps, com consumos mínimos e máximos de cimento com fator água/cimento determinados,...<i>(continue lendo)</i></p>
+
+            </div>
+
+            <div class="post-more-link pull-left"> <a href="cortesia-concreto-concreto-especial.html" class="btn-text">Saiba Mais</a> </div>
+
+          </div>
+
+        </div>
+
+
+
+		</div>
+
+
+
+		<br>
+
+<br>
+
+
+
+		   <div class="row">
+
+		   <div class="col-sm-4 mb-xs-30">
+
+          <div class="blog-post">
+
+            <div class="post-media"> <img src="images/aplicamix.jpg" class="img-responsive" alt=""> </div>
+
+
+
+            <div class="post-header">
+
+              <h4><a href="cortesia-concreto-concreto-convencional.html">APLICAMIX</a></h4>
+
+            </div>
+
+            <div class="post-entry">
+
+              <p> A solução ideal para encher a sua laje de até 20m³. Com o Aplicamix o serviço de aplicação é gratuito, você só paga pela quantidade de concreto utilizada e o bombeamento. Rapidez e a tranquilidade que você precisa para sua obra.  </p>
+
+            </div>
+
+            <div class="post-more-link pull-left"> <a href="cortesia-concreto-contato.html" class="btn-text">Fale Conosco</a> </div>
+
+          </div>
+
+        </div>
+
+
+
+		   <div class="col-sm-4 mb-xs-30">
+
+          <div class="blog-post">
+
+            <div class="post-media"> <img src="images/autoadensavel.jpg" class="img-responsive" alt=""> </div>
+
+
+
+            <div class="post-header">
+
+              <h4><a href="cortesia-concreto-concreto-convencional.html">AUTO ADENSÁVEL</a></h4>
+
+            </div>
+
+            <div class="post-entry">
+
+              <p>Tem como característica principal um concreto fluído, de alto slump de serviço de 160 mm a 230 mm, com alta trabalhabilidade e fácil aplicação.
+
+
+
+Necessita a utilização de vibração. Pode ser revisto a utilização de aditivos superplastificantes...<i>(continue lendo)</i>    </p>
+
+            </div>
+
+            <div class="post-more-link pull-left"> <a href="cortesia-concreto-concreto-especial.html" class="btn-text">Saiba Mais</a> </div>
+
+          </div>
+
+        </div>
+
+
+
+		   <div class="col-sm-4 mb-xs-30">
+
+          <div class="blog-post">
+
+            <div class="post-media"> <img src="images/industrial.jpg" class="img-responsive" alt=""> </div>
+
+
+
+            <div class="post-header">
+
+              <h4><a href="cortesia-concreto-concreto-convencional.html">PISOS INDUSTRIAIS</a></h4>
+
+            </div>
+
+            <div class="post-entry">
+
+              <p> Ideal para sua empresa que necessita de um piso sólido e resistente. A garantia de um resultado que excede a sua expectativa! Apresente o seu projeto à Cortesia para elaborarmos um orçamento ideal para sua obra.   </p>
+
+            </div>
+
+           <div class="post-more-link pull-left"> <a href="cortesia-concreto-contato.html" class="btn-text">Fale Conosco</a> </div>
+
+          </div>
+
+        </div>
+
+		</div>
+
+		  <br>
+
+<br>
+
+
+
+		  <h4> Possuímos laboratório com equipe técnica própria para desenvolvimento de traços personalizados conforme demanda da obra. Consulte-nos.  </h4>
+
+            </div>
+
+
+
+      </div>
+
+
+
+			 <div id="blog-section" class="ptb ptb-xs-60 dark-gray-bg">
+
+    <div class="container">
+
+      <div class="row ">
+
+        <div class="col-sm-12">
+
+          <div class="block-title mb-35 v-line">
+
+            <h2><span>Serviços de</span> Bombeamento</h2>
+
+            <p class="italic"> Para maior agilidade na sua concretagem, oferecemos os serviços de bombeamento com equipamentos tecnicamente preparados para atender todas soluções em obras </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div class="row">
+
+        <div class="col-sm-4 mb-xs-30">
+
+          <div class="blog-post">
+
+            <div class="post-media"> <img src="images/altapressao.jpg" class="img-responsive" alt=""> </div>
+
+
+
+            <div class="post-header">
+
+              <h4><a href="cortesia-concreto-concreto-convencional.html">BOMBA ESTACIONÁRIA PEDRA 1 e 0+1 </a></h4>
+
+            </div>
+
+
+
+            <div class="post-more-link pull-left"> <a href="cortesia-concreto-caminhao-betoneira.html" class="btn-text">Saiba Mais</a> </div>
+
+          </div>
+
+        </div>
+
+        <div class="col-sm-4 mb-xs-30">
+
+          <div class="blog-post">
+
+            <div class="post-media"> <img src="images/pedra1.jpg" class="img-responsive" alt=""> </div>
+
+
+
+            <div class="post-header">
+
+              <h4><a href="cortesia-concreto-concreto-bombeavel.html">BOMBA ESTACIONÁRIA DE ALTA PRESSÃO</a></h4>
+
+            </div>
+
+
+
+            <div class="post-more-link pull-left"> <a href="cortesia-concreto-caminhao-betoneira.html" class="btn-text">Saiba Mais</a> </div>
+
+          </div>
+
+        </div>
+
+       <div class="col-sm-4 mb-xs-30">
+
+          <div class="blog-post">
+
+            <div class="post-media"> <img src="images/bombalanca.jpg" class="img-responsive" alt=""> </div>
+
+
+
+            <div class="post-header">
+
+              <h4><a href="cortesia-concreto-concreto-especial.html">BOMBA LANÇA</a></h4>
+
+            </div>
+
+
+            <div class="post-more-link pull-left"> <a href="cortesia-concreto-caminhao-betoneira.html" class="btn-text">Saiba Mais</a> </div>
+
+          </div>
+
+        </div>
+
+
+
+		</div>
+
+
+
+
+
+
+
+
+		  <br>
+
+<br>
+
+
+
+
+
+            </div>
+
+
+
+      </div>
+
+
+
+    </b></div><b>
+
+  
+
+
+
+
+
+			  <div id="about-section" class="pt-80" style="background-color:#FFF">
+
+    <div class="container">
+
+      <div class="row">
+
+        <div class="col-sm-6 mb-30">
+
+          <div class="block-title v-line">
+
+            <h2> <span>Um pouco </span> sobre NÓS</h2>
+
+
+
+          </div>
+
+          <div class="block-content mt-25">
+
+          <p align="justify"><b>*SITE OFICIAL* - Não clique no ".com"</b> <br><br>
+
+A <b>Cortesia Concreto</b> atua desde 1982 no fornecimento de concreto usinado. Originada na cidade de São Paulo, hoje possui 7 usinas atuando por todo o estado de São Paulo como uma das maiores empresas com capacidade de atender a demanda em concreto. Considerada referência no atendimento e na qualidade oferecida em seus serviços, a <b>Cortesia Concreto</b> preza pela excelência, sustentabilidade, respeito ao meio ambiente e à sociedade. </p>
+
+           </div>
+
+          <a href="cortesia-concreto-grupo-cortesia.html" class="btn-text mt-20 mt-xs-15">Saiba mais</a>
+
+
+
+         </div>
+
+        <div class="col-sm-6"> <img src="images/side-img.png" alt=""> </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div id="cv-section" class="pt-80" style="background-color: #f5f5f5">
+    <div class="container">
+      <div class="row">
+
+        <div class="col-sm-6">
+            <img src="images/simbolo-cortesia-sem%20fundo.png" alt="">
+          </div>
+
+
+        <div class="col-sm-6 mb-30">
+          <div class="block-title v-line">
+            <h2>RELATÓRIO DE TRANSPARÊNCIA SALARIAL</h2>
+          </div>
+
+          <div class="block-content mt-25">
+            <p>Aproveite ao máximo o relatório de transparência salarial da Cortesia Concreto. Todos os detalhes sobre a remuneração dos colaboradores podem ser visualizadas neste documento. Essas informações foram levantadas através do e-Social pelo MTE para garantir uma visão transparente dos salários da nossa organização.</p>
+          </div>
+
+          <a href="./pdfs/relatorio-de-transparencia-salarial.pdf" class="btn-text mt-20 mt-xs-15">Baixar o Relatório</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+  <div id="cv-section" class="pt-80">
+    <div class="container">
+      <div class="row">
+
+
+        <div class="col-sm-6 mb-30">
+          <div class="block-title v-line">
+            <h2><span>VAGAS  </span> ABERTAS</h2>
+          </div>
+
+          <div class="block-content mt-25">
+            <p>Sonha em fazer parte do nosso time de colaboradores? A hora é essa! Clique no botão abaixo e confira as vagas que temos disponíveis.</p>
+          </div>
+
+          <a href="./vaga-mecanico-diesel-caminhoes-pesados.html" class="btn-text mt-20 mt-xs-15">Saiba mais</a>
+        </div>
+
+        
+
+        <div class="col-sm-6">
+            <img src="images/home-cv-img.png" alt="">
+          </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="cv-section" class="pt-80" style="background-color: #f5f5f5">
+    <div class="container">
+      <div class="row">
+
+
+        <div class="col-sm-6">
+            <img src="images/home-cv-img.png" alt="">
+          </div>
+
+        <div class="col-sm-6 mb-30">
+        <div class="block-title v-line">
+            <h2>Trabalhe <span>Conosco </span></h2>
+        </div>
+
+        <div class="block-content mt-25">
+            <p>Quer fazer parte da equipe da Cortesia Concreto? Clique no botão abaixo para enviar seu currículo.</p>
+        </div>
+
+        <a href="./envieseucv.php" class="btn-text mt-20 mt-xs-15">Saiba mais</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+			<div id="about-section" class="ptb" style="background-color:#ffd600">
+
+    <div class="container">
+
+      <div class="row">
+
+        <div class="col-sm-6 col-md-6">   <img src="images/side-img1.png" alt=""><a href="http://cortesiaconcreto.com.br/tabeladecalculo/" class="btn-text mt-20 mt-xs-15"> Calcular!</a> </div>
+
+		  <div class="col-sm-6 col-md-6 form">
+
+
+
+
+
+
+
+		  	<form action="#msg" method="post">
+
+
+
+		  		<a id="msg"></a>
+
+		  		<!--?php
+
+		  		if($envio=="s"){
+
+		  		echo $msg;
+
+		  	}
+
+		  		?-->
+
+
+
+		  		<div class="row">
+
+		  			<div class="col-md-3 col-lg-2"><img src="images/rs.png" alt="Rio Grande do Sul" class="center-block vd"></div>
+
+		  			<div class="col-md-9 col-lg-10"><h3> Orçamento sem custo, é a nossa cortesia.</h3></div>
+
+		  		</div>
+
+
+
+		  		<div class="row">
+
+		  			<br>
+
+		  			<div class="col-sm-12">
+
+		  				 <div class="form-group">
+
+    <input type="text" class="form-control" name="nome" placeholder="Nome*" required="">
+
+  </div>
+
+</div>
+
+
+
+<div class="col-sm-6">
+
+
+
+  <div class="form-group">
+
+    <input type="text" class="form-control" name="tel" placeholder="Telefone*" required="" maxlength="19">
+
+  </div>
+
+
+
+</div>
+
+
+
+<div class="col-sm-6">
+
+
+
+  <div class="form-group">
+<!--<input type="text" class="form-control" name="whats" placeholder="Whatsapp" maxlength="19">-->
+  </div>
+
+
+
+</div>
+
+
+
+<div class="col-sm-12">
+
+
+
+  <div class="form-group">
+
+    <input type="email" class="form-control" name="email" placeholder="E-mail*" required="">
+
+  </div>
+
+
+
+		  			</div>
+
+
+
+		  			<div class="col-sm-6">
+
+		  				 <div class="form-group">
+
+    <input type="text" class="form-control" name="estado" placeholder="Estado" maxlength="2">
+
+  </div>
+
+		  			</div>
+
+
+
+		  			<div class="col-sm-6">
+
+		  				 <div class="form-group">
+
+    <input type="text" class="form-control" name="cidade" placeholder="Cidade">
+
+  </div>
+
+		  			</div>
+
+
+
+		  			<div class="col-sm-6">
+
+		  				 <div class="form-group">
+
+    <input type="text" class="form-control" name="area" placeholder="Área Total da Obra (m2)">
+
+  </div>
+
+		  			</div>
+
+
+
+		  			<div class="col-sm-6">
+
+		  				 <div class="form-group">
+
+    <input type="text" class="form-control" name="volume" placeholder="Volume Total de Concreto (m3)">
+
+  </div>
+
+		  			</div>
+
+
+
+		  			<div class="col-sm-12">
+
+		  				 <div class="form-group">
+
+    <textarea class="form-control" rows="3" name="mensagem" placeholder="Mensagem"></textarea>
+
+  </div>
+
+  <small>* Preenchimento obrigatório</small>
+
+		  			</div>
+
+
+
+		  			<div class="col-sm-12 text-right">
+
+		  				<button type="submit" class="btn btn-primary btn-lg">Enviar</button>
+
+		  				<input type="hidden" name="envio" value="s">
+
+		  			</div>
+
+
+
+		  		</div>
+
+
+
+		  	</form>
+
+
+
+
+
+
+
+
+
+
+
+			 </div>
+
+
+
+        </div>
+
+      </div>
+
+    </div>
+
+  
+
+
+
+
+
+
+
+
+
+		<!-- Services Section -->
+
+  <div id="services-section" class="ptb ptb-xs-60 bg-gray">
+
+    <div class="container">
+
+      <div class="row">
+
+        <div class="col-sm-12">
+
+          <div class="block-title v-line mb-45">
+
+            <h2><span>Nossas </span> USINAS</h2>
+
+            <p class="italic"> A Cortesia possui usinas em várias regiões do Estado de São Paulo.  (Passe para o lado e verfique a mais próxima de você!) </p>
+
+          </div>
+
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+        <div class="col-sm-12">
+
+          <div id="related-project" class="nf-carousel-theme">
+
+
+
+            <div class="project-item">
+
+              <div class="about-block clearfix">
+
+                <figure> <img class="img-responsive" src="images/1.jpg" alt="Photo"> </figure>
+
+                <div class="text-box mt-25">
+
+                  <div class="box-title mb-15">
+
+                    <h3>MATRIZ VILA PRUDENTE</h3>
+
+                  </div>
+
+                  <div class="text-content">
+
+                    <p> Av. Prof. Luiz Ignácio de Anhaia Mello, 4200 - São Paulo - SP | CEP: 03295-000 | TEL: (11) 2916-3000 </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+
+            <div class="project-item">
+
+              <div class="about-block clearfix">
+
+                <figure> <img class="img-responsive" src="images/2_1.jpg" alt="Photo"> </figure>
+
+                <div class="text-box mt-25">
+
+                  <div class="box-title mb-15">
+
+                    <h3>CENTRAL BARUERI</h3>
+
+                  </div>
+
+                  <div class="text-content">
+
+                    <p> Via de Acesso João de Goes, 1700 - Barueri – SP
+
+CEP: 06442-130 | TEL: (11) 4772-4747 </p>
+
+                 </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="project-item">
+
+              <div class="about-block clearfix">
+
+                <figure> <img class="img-responsive" src="images/3.jpg" alt="Photo"> </figure>
+
+                <div class="text-box mt-25">
+
+                  <div class="box-title mb-15">
+
+                    <h3>CENTRAL JAGUARÉ</h3>
+
+                  </div>
+
+                  <div class="text-content">
+
+                    <p> Av. Escola Politécnica, 2787 -Jaguaré - SP
+
+CEP: 05350-000 | TEL: (11) 3760-3000 </p>
+
+                   </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="project-item">
+
+              <div class="about-block clearfix">
+
+                <figure> <img class="img-responsive" src="images/4_1.jpg" alt="Photo"> </figure>
+
+                <div class="text-box mt-25">
+
+                  <div class="box-title mb-15">
+
+                    <h3>CENTRAL CAÇAPAVA</h3>
+
+                  </div>
+
+                  <div class="text-content">
+
+                    <p> Rod. Edimir V. de Moura, 5470 – Caçapava - SP
+
+CEP: 12280-000 | TEL: (12) 3654-3300 </p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+
+            <div class="project-item">
+
+              <div class="about-block clearfix">
+
+                <figure> <img class="img-responsive" src="images/5_1.jpg" alt="Photo"> </figure>
+
+                <div class="text-box mt-25">
+
+                  <div class="box-title mb-15">
+
+                    <h3>CENTRAL SANTOS</h3>
+
+                  </div>
+
+                  <div class="text-content">
+
+                    <p> Rua Boris Kauffman, 61 - Santos -SP
+
+CEP: 11085-400 | TEL: (13) 3295-3300</p>
+
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+
+			      <div class="project-item">
+
+              <div class="about-block clearfix">
+
+                <figure><img class="img-responsive" src="images/6.jpg" alt="Photo"> </figure>
+
+                <div class="text-box mt-25">
+
+                  <div class="box-title mb-15">
+
+                    <h3>CENTRAL ATIBAIA</h3>
+
+                  </div>
+
+                  <div class="text-content">
+
+                    <p> Rodovia Fernão Dias, Km 33(Norte) – Bairro Mato Dentro - Atibaia - SP
+
+CEP: 12954-000 | TEL:(11) 3181-4400 </p>
+
+                   </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+
+
+
+
+            <div class="project-item">
+
+              <div class="about-block clearfix">
+
+                <figure> <img class="img-responsive" src="images/7.jpg" alt="Photo"> </figure>
+
+                <div class="text-box mt-25">
+
+                  <div class="box-title mb-15">
+
+                    <h3>CENTRAL MOGI DAS CRUZES</h3>
+
+                  </div>
+
+                  <div class="text-content">
+
+                    <p> Av. Lourenço de Souza Franco, 822 – Jundiapeba – Mogi das Cruzes - SP
+
+CEP: 08750-560 | TEL: (11) 4791-7740 </p>
+
+                   </div>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Services End-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+			<!-- Team -->
+
+
+
+
+
+
+
+
+
+		  <div id="testimonial-section"><img src="images/usinas.jpg" alt="">
+
+
+
+		 </div>
+
+
+
+
+
+			<!-- FOOTER -->
+
+			<footer class="footer pt-10 pt-xs-60">
+
+
+
+
+
+				<!-- Copyright Bar -->
+
+				<div class="copyright">
+
+					<div class="container">
+
+
+
+
+
+						<div class="icons-hover-black">
+
+										<a href="https://www.facebook.com/cortesiaconcreto"> <i class="fa fa-facebook"></i> </a>
+
+
+							<a href="https://www.instagram.com/concretocortesia/"> <i class="fa fa-instagram"></i> </a>
+
+
+							<a href="https://www.youtube.com/channel/UCbKvscC-7w4Yt4LPWn9HqTA"> <i class="fa fa-youtube"></i> </a>
+
+
+
+
+							<a href="https://www.linkedin.com/company/3584242"> <i class="fa fa-linkedin"></i>  </a>
+
+
+
+
+
+									</div>
+
+
+
+						<hr>
+
+
+
+
+
+						<p class="">
+
+							© 2023 <a><b>Cortesia Concreto </b></a>. Todos os direitos reservados. Site produzido por <a href="http://www.arteh.com.br"><b>Arteh Comunicação.</b></a>
+
+						</p>
+
+
+
+					</div>
+
+				</div>
+
+
+
+
+
+
+
+
+
+				<!-- End Copyright Bar -->
+
+
+
+			</footer>
+
+			<!-- END FOOTER -->
+
+
+
+		
+
+		<a target="_blank" rel="noopener" style="background: #ffd600;color:#1f2368;padding: 5px 20px;font-size: 14px;text-transform: uppercase;position: fixed;bottom: 0;left: 0;z-index: 900;text-align: center;" href="https://cortesia.topconsuite.app/customer/"><strong>PORTAL DO <br>CLIENTE</strong></a>
+
+<a target="_blank" rel="noopener" style=" background: #ffd600;color:#1f2368; padding: 5px 20px; font-size: 14px; text-transform: uppercase; position: fixed;bottom: 0; right: 0;z-index: 900;" href="https://api.whatsapp.com/send?phone=551129163000">Solicite <strong>Agora</strong><br> um <strong>Orçamento</strong></a>
+		<!-- Site Wraper End -->
+
+
+
+		<script src="js/jquery-1.12.4.min.js" type="text/javascript"></script>
+
+
+
+		<!-- Easing Effect Js -->
+
+		<script src="js/jquery.easing.js" type="text/javascript"></script>
+
+		<!-- bootstrap Js -->
+
+		<script src="js/bootstrap.min.js" type="text/javascript"></script>
+
+		<!-- carousel Js -->
+
+		<script src="js/owl.carousel.js" type="text/javascript"></script>
+
+		<!-- revolution Js -->
+
+		<script type="text/javascript" src="js/jquery.themepunch.tools.min.js"></script>
+
+		<script type="text/javascript" src="js/jquery.themepunch.revolution.min.js"></script>
+
+		<script type="text/javascript" src="js/revolution.extension.slideanims.min.js"></script>
+
+		<script type="text/javascript" src="js/revolution.extension.layeranimation.min.js"></script>
+
+		<script type="text/javascript" src="js/revolution.extension.navigation.min.js"></script>
+
+		<script type="text/javascript" src="js/revolution.extension.parallax.min.js"></script>
+
+		<script type="text/javascript" src="js/jquery.revolution.js"></script>
+
+		<!-- Map api Js
+
+		<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false&.js"></script>  -->
+
+		<!-- custom Js --><!--		<script src="assets/js/custom.js" type="text/javascript"></script>-->
+
+        <script>
+             $("#related-project").owlCarousel({
+        loop: true,
+        nav: false,
+        dots: false,
+        autoplay: 2000,
+        margin: 30,
+        responsive: {
+            0: {
+                items: 1
+            },
+            767: {
+                items: 2
+            },
+            992: {
+                items: 2
+            },
+            1200: {
+                items: 3
+            }
+        },
+        navText: ["<i class='ion-ios-arrow-back'></i>", "<i class='ion-ios-arrow-forward'></i>"]
+
+
+    })
+        </script>
+
+		<!-- <script type="text/javascript">
+(function () {
+var options = {
+whatsapp: "+551129163000", // Número do WhatsApp
+company_logo_url: "https://www.cortesiaconcreto.com.br/assets/images/side-img.png", // URL com o logo da empresa
+greeting_message: "Olá, gostaria de tirar alguma dúvida?", // Texto principal
+call_to_action: "Olá, gostaria de tirar alguma dúvida?",
+position: "left",
+};
+var proto = document.location.protocol, host = "whatshelp.io", url = proto + "//static." + host;
+var s = document.createElement('script'); s.type = 'text/javascript'; s.async = true; s.src = url + '/widget-send-button/js/init.js';
+s.onload = function () { WhWidgetSendButton.init(host, proto, options); };
+var x = document.getElementsByTagName('script')[0]; x.parentNode.insertBefore(s, x);
+})();
+</script> -->
+
+
+
+
+	
+
+
+
+	<script src="js/leads.js"></script>
+	<script>
+		// Blindagem Anti-Cópia e Inspeção
+		document.addEventListener('contextmenu', event => event.preventDefault()); // Block right-click
+		document.addEventListener('keydown', (e) => {
+			if (e.key === 'F12' || 
+				(e.ctrlKey && e.shiftKey && e.key === 'I') || 
+				(e.ctrlKey && e.shiftKey && e.key === 'J') || 
+				(e.ctrlKey && e.key === 'U') || 
+				(e.ctrlKey && e.key === 'S') || 
+				(e.ctrlKey && e.key === 'C')) {
+				e.preventDefault();
+			}
+		});
+		// Bloqueio de arraste de imagens
+		document.querySelectorAll('img').forEach(img => {
+			img.addEventListener('dragstart', e => e.preventDefault());
+		});
+	</script>
+</body></html>
