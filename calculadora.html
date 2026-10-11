@@ -4,1106 +4,963 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tabela de Cálculo para Laje e Fundação | Cortesia Concreto</title>
+    <title>Tabela de cálculo para laje e fundação | Cortesia Concreto</title>
     <meta name="description" content="Tabela de cálculo oficial para dimensionamento exato de lajes, vigas baldrame, sapatas e brocas da Cortesia Concreto.">
     <link rel="shortcut icon" type="image/x-icon" href="images/favicon.png">
-    <link href="css/bootstrap.css" rel="stylesheet" type="text/css">
-    <link href="css/font-awesome.css" rel="stylesheet" type="text/css">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,600,700,800%7COswald:400,700" rel="stylesheet">
     
     <style>
         :root {
-            --cortesia-blue: #0b1a42;
-            --cortesia-light-blue: #1c52a3;
-            --cortesia-yellow: #ffd600;
-            --cortesia-gray-bg: #eceff1;
+            --cortesia-navy: #0b1a42;
+            --cortesia-blue-btn: #5bc0de;
+            --cortesia-blue-btn-hover: #31b0d5;
+            --cortesia-gray-input: #ffffff;
+            --cortesia-gray-readonly: #e9ecef;
             --cortesia-border: #ccd1d9;
             --cortesia-text: #333333;
         }
 
-        body {
-            font-family: 'Open Sans', Arial, sans-serif;
-            background-color: #f7f9fa;
-            color: var(--cortesia-text);
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+
+        body {
+            font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+            background-color: #ffffff;
+            color: var(--cortesia-text);
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Top Bar & Header Identical to Images */
-        .header-curve-bg {
-            background: linear-gradient(180deg, #ffffff 0%, #f1f3f6 85%, #dce1e8 100%);
-            border-bottom: 2px solid #cfd5dc;
-            padding: 15px 0 10px 0;
+        /* 1. TOPO CURVADO IDÊNTICO À IMAGEM 1 */
+        .top-curved-header {
+            width: 100%;
+            background: #ffffff;
             position: relative;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+            padding: 10px 0 0 0;
+            display: flex;
+            justify-content: center;
         }
 
-        .header-container {
-            max-width: 1080px;
-            margin: 0 auto;
+        .header-inner {
+            width: 100%;
+            max-width: 900px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             text-align: center;
+            position: relative;
+        }
+
+        /* O arco cinza claro e detalhe chanfrado superior das imagens */
+        .header-arch {
+            width: 100%;
+            background: linear-gradient(180deg, #f8f9fa 0%, #ebeef2 70%, #d8dde4 100%);
+            border-top: 1px solid #dcdfe4;
+            border-bottom: 2px solid #b8c0cc;
+            border-radius: 120px 120px 0 0;
+            padding: 12px 20px 8px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.9), 0 3px 6px rgba(0,0,0,0.03);
         }
 
         .header-logo {
-            max-height: 65px;
-            margin-bottom: 5px;
+            height: 60px;
+            max-width: 100%;
+            object-fit: contain;
+            margin-bottom: 2px;
         }
 
         .header-slogan {
-            font-size: 13px;
-            font-weight: 700;
-            color: #1e285a;
-            margin: 0 0 4px 0;
-            letter-spacing: 0.3px;
-        }
-
-        .header-subtitle {
             font-size: 11px;
-            color: #6c7a89;
-            margin: 0;
+            font-weight: bold;
+            color: #1e2554;
+            letter-spacing: 0.2px;
+            margin-bottom: 2px;
         }
 
-        /* Main Container */
-        .calculator-wrapper {
-            max-width: 1080px;
-            margin: 25px auto 40px auto;
-            background: #ffffff;
-            border: 1px solid #d9e0e6;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
-            padding: 25px 30px;
-            border-radius: 4px;
+        .header-subline {
+            font-size: 10px;
+            color: #556270;
+        }
+
+        /* 2. ÁREA CENTRAL DO FORMULÁRIO */
+        .calculator-container {
+            max-width: 980px;
+            margin: 20px auto 40px auto;
+            padding: 0 15px;
         }
 
         .page-title {
-            font-family: 'Open Sans', Arial, sans-serif;
-            font-size: 17px;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-top: 0;
-            margin-bottom: 16px;
-        }
-
-        /* Client Info Header Strip (Dark Blue Bar identical to screenshot) */
-        .client-info-bar {
-            background-color: var(--cortesia-blue);
-            padding: 8px 12px;
-            border-radius: 2px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
+            font-size: 14px;
+            font-weight: normal;
+            color: #333333;
             margin-bottom: 12px;
         }
 
-        .client-info-bar .input-group-custom {
-            flex: 1;
-            min-width: 180px;
-        }
-
-        .client-info-bar input {
-            width: 100%;
-            height: 30px;
-            background: #ffffff;
-            border: 1px solid #ffffff;
-            border-radius: 2px;
-            padding: 4px 10px;
-            font-size: 12px;
-            color: #333;
-            outline: none;
-        }
-
-        .client-info-bar .date-badge {
-            background: #ffffff;
-            color: #222;
-            height: 30px;
-            line-height: 30px;
-            padding: 0 14px;
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: 2px;
-            text-align: center;
-            min-width: 110px;
-        }
-
-        /* Helper Instruction Warning */
-        .instruction-note {
-            color: #d32f2f;
-            font-size: 11px;
-            font-weight: 600;
-            margin: 8px 0 20px 0;
-        }
-
-        /* Calculator Sections */
-        .calc-section {
-            margin-bottom: 22px;
-            border-bottom: 1px solid #edf1f5;
-            padding-bottom: 20px;
-        }
-
-        .calc-section:last-of-type {
-            border-bottom: none;
-            padding-bottom: 5px;
-        }
-
-        .calc-section-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: #1a252f;
+        /* Barra Azul Escura de Identificação do Cliente */
+        .client-bar {
+            background-color: var(--cortesia-navy);
+            padding: 6px 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
             margin-bottom: 10px;
         }
 
-        .calc-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 8px;
+        .client-bar input {
+            flex: 1;
+            min-width: 160px;
+            height: 26px;
+            background-color: #ffffff;
+            border: 1px solid #ffffff;
+            border-radius: 0;
+            padding: 2px 8px;
+            font-size: 11px;
+            color: #222222;
+            outline: none;
         }
 
-        .calc-field {
+        .client-bar .date-tag {
+            background-color: #ffffff;
+            color: #222222;
+            height: 26px;
+            line-height: 26px;
+            padding: 0 12px;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            min-width: 90px;
+            border-radius: 0;
+        }
+
+        .instruction-note {
+            color: #cc0000;
+            font-size: 11px;
+            margin: 10px 0 16px 0;
+        }
+
+        /* SEÇÕES ESTRUTURAIS */
+        .calc-group {
+            margin-bottom: 18px;
+            border-bottom: 1px solid #eeeeee;
+            padding-bottom: 14px;
+        }
+
+        .calc-group-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #333333;
+            margin-bottom: 6px;
+        }
+
+        .calc-line {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .input-item {
             display: flex;
             flex-direction: column;
         }
 
-        /* Classes semânticas para larguras dos campos */
-        .w-field-80 { width: 80px; }
-        .w-field-100 { width: 100px; }
-        .w-field-110 { width: 110px; }
-        .w-field-120 { width: 120px; }
-        .w-field-130 { width: 130px; }
-        .w-field-140 { width: 140px; }
-        .w-field-result { width: 130px; margin-left: auto; }
-        .w-field-result-laje { width: 140px; margin-left: auto; }
-        .field-formula { font-size: 11px; }
-
-        .calc-field label {
-            font-size: 10px;
-            color: #555555;
-            margin-bottom: 3px;
+        .input-item label {
+            font-size: 9px;
+            color: #444444;
+            margin-bottom: 2px;
             text-align: center;
-            font-weight: 600;
         }
 
-        .calc-field input {
-            height: 30px;
-            border: 1px solid #ccd1d9;
-            background: #ffffff;
-            border-radius: 2px;
-            padding: 2px 8px;
-            font-size: 12px;
-            color: #222;
+        .input-item input {
+            height: 26px;
+            border: 1px solid #b8bec5;
+            background-color: #ffffff;
+            padding: 2px 6px;
+            font-size: 11px;
+            color: #222222;
             text-align: center;
             outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
+            border-radius: 0;
         }
 
-        .calc-field input:focus {
-            border-color: #1c52a3;
-            box-shadow: 0 0 5px rgba(28, 82, 163, 0.25);
+        .input-item input:focus {
+            border-color: #3b73b9;
         }
 
-        .calc-field input[readonly] {
+        .input-item input[readonly] {
             background-color: #e9ecef;
-            color: #495057;
-            font-weight: 700;
-            border-color: #ced4da;
+            color: #333333;
+            border-color: #d0d5dc;
             cursor: default;
         }
 
-        .operator-sign {
-            font-size: 13px;
-            font-weight: 700;
-            color: #555;
-            margin-top: 14px;
+        .op-text {
+            font-size: 11px;
+            color: #444444;
+            margin-bottom: 6px;
             padding: 0 2px;
+            font-weight: bold;
         }
 
-        /* Radio Options for Treliça */
-        .trelica-group {
+        /* Larguras Fidedignas */
+        .w-qtd { width: 85px; }
+        .w-med { width: 120px; }
+        .w-res { width: 110px; margin-left: auto; }
+        .w-diam { width: 110px; }
+        .w-const { width: 75px; }
+        .w-form-label { width: 130px; }
+
+        /* Treliça */
+        .trelica-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-left: 10px;
+            margin-left: 8px;
         }
 
-        .trelica-group > span {
-            font-size: 10px;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 3px;
+        .trelica-container > span {
+            font-size: 9px;
+            color: #444444;
+            margin-bottom: 2px;
         }
 
-        .trelica-options {
+        .trelica-radios {
             display: flex;
             gap: 12px;
+            height: 26px;
             align-items: center;
-            height: 30px;
         }
 
-        .trelica-option {
+        .radio-unit {
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-size: 10px;
-            font-weight: 700;
-            color: #444;
+            font-size: 9px;
+            color: #333333;
             cursor: pointer;
         }
 
-        .trelica-option input[type="radio"] {
-            margin: 0 0 2px 0;
+        .radio-unit input[type="radio"] {
+            margin: 0 0 1px 0;
             cursor: pointer;
         }
 
-        /* Add Button */
-        .btn-add-item {
-            background-color: #5bc0de;
+        /* Botão Add + com Vetor SVG */
+        .btn-add {
+            background-color: var(--cortesia-blue-btn);
             color: #ffffff;
             border: none;
-            border-radius: 3px;
-            padding: 5px 12px;
-            font-size: 11px;
-            font-weight: 700;
+            padding: 4px 10px;
+            font-size: 10px;
+            font-weight: bold;
             cursor: pointer;
-            margin-top: 14px;
+            margin-top: 6px;
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            transition: background-color 0.2s;
+            border-radius: 2px;
         }
 
-        .btn-add-item:hover {
-            background-color: #31b0d5;
+        .btn-add:hover {
+            background-color: var(--cortesia-blue-btn-hover);
         }
 
-        /* Total Summary Section (Grey Cards) */
-        .total-summary-card {
-            background-color: #ffffff;
-            border-top: 2px solid #e2e7ec;
-            padding-top: 18px;
-            margin-top: 10px;
+        .btn-add svg {
+            width: 9px;
+            height: 9px;
+            fill: #ffffff;
         }
 
-        .total-boxes-row {
+        /* 3. RESULTADO TOTAL (Caixas Cinzas das Imagens) */
+        .summary-section {
+            margin-top: 15px;
+            padding-top: 10px;
+        }
+
+        .summary-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #333333;
+            margin-bottom: 8px;
+        }
+
+        .summary-boxes {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
+            gap: 8px;
+            margin-bottom: 18px;
         }
 
-        .total-box {
+        .summary-box {
             flex: 1;
-            min-width: 140px;
+            min-width: 120px;
             display: flex;
             flex-direction: column;
         }
 
-        .total-box label {
-            font-size: 11px;
-            font-weight: 700;
+        .summary-box label {
+            font-size: 10px;
             color: #333333;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             text-align: center;
         }
 
-        .total-box input {
-            height: 36px;
-            background: #e9ecef;
+        .summary-box input {
+            height: 32px;
+            background-color: #e9ecef;
             border: 1px solid #ccd1d9;
             text-align: center;
-            font-size: 14px;
-            font-weight: 700;
-            color: #1a252f;
-            border-radius: 2px;
-        }
-
-        .total-box.highlight input {
-            background: #fff8e1;
-            border: 1.5px solid #ffb300;
-            color: #b78103;
-            font-size: 16px;
-        }
-
-        /* Disclaimer Text */
-        .disclaimer-text {
-            color: #c0392b;
-            font-size: 11px;
-            line-height: 1.5;
-            margin-bottom: 25px;
-            font-weight: 600;
-        }
-
-        /* Estimated Commercial Valuation Card */
-        .commercial-metric-card {
-            background: linear-gradient(135deg, #10214a 0%, #1f3b7d 100%);
-            color: #ffffff;
-            border-radius: 6px;
-            padding: 20px 24px;
-            margin-bottom: 25px;
-            box-shadow: 0 8px 24px rgba(16, 33, 74, 0.15);
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .metric-details {
-            flex: 1;
-            min-width: 250px;
-        }
-
-        .metric-badge {
-            display: inline-block;
-            background: var(--cortesia-yellow);
-            color: #0b1a42;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            padding: 3px 8px;
-            border-radius: 3px;
-            margin-bottom: 8px;
-            letter-spacing: 0.5px;
-        }
-
-        .metric-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin: 0 0 6px 0;
-        }
-
-        .metric-desc {
             font-size: 12px;
-            color: #cfd8dc;
-            margin: 0;
+            font-weight: bold;
+            color: #222222;
+            border-radius: 0;
+        }
+
+        /* Texto Legal idêntico */
+        .disclaimer-red {
+            color: #cc0000;
+            font-size: 10px;
             line-height: 1.4;
+            margin-bottom: 16px;
         }
 
-        .metric-values {
-            text-align: right;
-            min-width: 200px;
+        /* Botão Calcular com Vetor de Calculadora Avançado */
+        .btn-calcular-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 30px;
         }
 
-        .metric-price-label {
-            font-size: 11px;
-            text-transform: uppercase;
-            color: #90a4ae;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .metric-price-value {
-            font-size: 26px;
-            font-weight: 800;
-            color: #ffffff;
-            margin: 2px 0;
-        }
-
-        .metric-unit-note {
-            font-size: 11px;
-            color: #ffd600;
-            font-weight: 600;
-        }
-
-        .actions-bar {
-            overflow: hidden;
-            margin-top: 10px;
-        }
-
-        /* Main Calculate & Send Button */
-        .btn-calc-submit {
-            background-color: #5bc0de;
+        .btn-calcular {
+            background-color: var(--cortesia-blue-btn);
             color: #ffffff;
             border: none;
-            border-radius: 3px;
-            padding: 10px 24px;
-            font-size: 13px;
-            font-weight: 700;
+            padding: 7px 16px;
+            font-size: 12px;
+            font-weight: normal;
             cursor: pointer;
-            float: right;
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
-            transition: all 0.2s ease-in-out;
+            gap: 6px;
+            border-radius: 2px;
+            transition: background-color 0.2s;
         }
 
-        .btn-calc-submit:hover {
-            background-color: #31b0d5;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.18);
-            transform: translateY(-1px);
+        .btn-calcular:hover {
+            background-color: var(--cortesia-blue-btn-hover);
         }
 
-        /* Banner Blue Strip & Footer Identical to Image 1 */
-        .footer-banner-strip {
-            background: linear-gradient(90deg, #091330 0%, #0d1e47 18%, #13337a 40%, #1e52b3 70%, #091330 100%);
-            padding: 22px 0;
-            margin-top: 50px;
-            border-top: 3px solid var(--cortesia-yellow);
+        .btn-calcular svg {
+            width: 14px;
+            height: 14px;
+            fill: #ffffff;
         }
 
-        .banner-content {
-            max-width: 1080px;
-            margin: 0 auto;
+        /* 4. BANNER AZUL E RODAPÉ IDÊNTICOS À IMAGEM 2 */
+        .blue-footer-banner {
+            width: 100%;
+            background-color: #030a21;
+            padding: 16px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .blue-banner-inner {
+            max-width: 980px;
+            width: 100%;
+            padding: 0 15px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 30px;
-            padding: 0 20px;
+            gap: 15px;
             flex-wrap: wrap;
         }
 
-        .banner-logo-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        .banner-logo-img {
+            height: 42px;
+            object-fit: contain;
         }
 
-        .banner-logo-wrapper img {
-            height: 48px;
-        }
-
-        .banner-text-tag {
-            background: linear-gradient(90deg, #18449c 0%, #205ac7 100%);
+        /* Faixa chanfrada com degradê azul */
+        .slogan-tag {
+            background: linear-gradient(90deg, #1847a6 0%, #205ccb 100%);
             color: #ffffff;
-            font-size: 18px;
-            font-weight: 700;
-            padding: 10px 28px;
-            clip-path: polygon(15px 0%, 100% 0%, calc(100% - 15px) 100%, 0% 100%);
+            font-size: 15px;
+            font-weight: bold;
+            padding: 8px 24px;
+            clip-path: polygon(14px 0%, 100% 0%, calc(100% - 14px) 100%, 0% 100%);
             letter-spacing: 0.3px;
+        }
+
+        .footer-credits {
+            background-color: #020617;
+            color: #7b8896;
+            font-size: 10px;
             text-align: center;
+            padding: 10px 15px;
+            border-top: 1px solid #0a1329;
         }
 
-        .footer-bottom-bar {
-            background-color: #060c20;
-            color: #7b8a9c;
-            font-size: 11px;
-            text-align: center;
-            padding: 14px 20px;
-            border-top: 1px solid #14203d;
-        }
-
-        .footer-bottom-bar a {
-            color: #9bb2d6;
+        .footer-credits a {
+            color: #8fa0b5;
             text-decoration: none;
         }
 
-        /* Dynamic WhatsApp Floating Icon */
-        .floating-wa-help {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #25d366;
-            color: #ffffff;
-            border-radius: 50px;
-            padding: 10px 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 700;
-            text-decoration: none;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.4);
-            z-index: 1000;
-            transition: transform 0.2s;
-        }
-
-        .floating-wa-help:hover {
-            transform: scale(1.05);
-            color: #ffffff;
-            text-decoration: none;
-        }
-
-        .wa-icon {
-            font-size: 18px;
+        /* Validação Visual Elegante sem Alert */
+        .input-error {
+            border-color: #e53935 !important;
+            background-color: #ffebee !important;
         }
 
         @media (max-width: 768px) {
-            .client-info-bar { flex-direction: column; align-items: stretch; }
-            .calc-row { flex-direction: column; align-items: stretch; gap: 10px; }
-            .w-field-80, .w-field-100, .w-field-110, .w-field-120, .w-field-130, .w-field-140, .w-field-result, .w-field-result-laje { width: 100%; margin-left: 0; }
-            .operator-sign { display: none; }
-            .banner-content { flex-direction: column; text-align: center; }
-            .banner-text-tag { clip-path: none; border-radius: 4px; }
-            .commercial-metric-card { flex-direction: column; text-align: center; }
-            .metric-values { text-align: center; }
+            .client-bar { flex-direction: column; align-items: stretch; }
+            .calc-line { flex-direction: column; align-items: stretch; gap: 8px; }
+            .w-qtd, .w-med, .w-res, .w-diam, .w-const, .w-form-label { width: 100%; margin-left: 0; }
+            .op-text { display: none; }
+            .blue-banner-inner { flex-direction: column; text-align: center; }
+            .slogan-tag { clip-path: none; border-radius: 2px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header identical to images -->
-    <header class="header-curve-bg">
-        <div class="header-container">
-            <a href="index.html" title="Cortesia Concreto - Página Inicial">
-                <img src="images/simbolo-cortesia-sem fundo.png" alt="Cortesia Concreto" class="header-logo">
-            </a>
-            <p class="header-slogan">Qualidade, Pontualidade e Segurança em sua Obra</p>
-            <p class="header-subtitle">Tabela de cálculo para laje e fundação</p>
+    <!-- 1. Topo idêntico à Imagem 1 -->
+    <header class="top-curved-header">
+        <div class="header-inner">
+            <div class="header-arch">
+                <a href="index.html" title="Cortesia Concreto">
+                    <img src="images/simbolo-cortesia-sem fundo.png" alt="Cortesia Concreto" class="header-logo">
+                </a>
+                <div class="header-slogan">Qualidade, Pontualidade e Segurança em sua Obra</div>
+                <div class="header-subline">Tabela de cálculo para laje e fundação</div>
+            </div>
         </div>
     </header>
 
-    <!-- Main Calculator Wrapper -->
-    <div class="calculator-wrapper">
+    <!-- 2. Formulário Central -->
+    <main class="calculator-container">
         <h1 class="page-title">Tabela de cálculo para laje e fundação</h1>
 
-        <!-- Header Client Info Bar -->
-        <div class="client-info-bar">
-            <div class="input-group-custom">
-                <input type="text" id="inputCliente" placeholder="Cliente" title="Nome do Cliente" autocomplete="name">
-            </div>
-            <div class="input-group-custom">
-                <input type="text" id="inputResponsavel" placeholder="Responsável" title="Nome do Responsável pela Obra" autocomplete="organization">
-            </div>
-            <div class="input-group-custom">
-                <input type="email" id="inputEmail" placeholder="E-mail" title="E-mail de Contato" autocomplete="email">
-            </div>
-            <div class="date-badge" id="displayDataHoje">
-                --/--/----
-            </div>
+        <!-- Faixa azul com dados do cliente -->
+        <div class="client-bar">
+            <input type="text" id="inputCliente" placeholder="Cliente" title="Nome do Cliente" autocomplete="name">
+            <input type="text" id="inputResponsavel" placeholder="Responsável" title="Nome do Responsável" autocomplete="organization">
+            <input type="email" id="inputEmail" placeholder="E-mail" title="E-mail de Contato" autocomplete="email">
+            <div class="date-tag" id="displayDataHoje">--/--/----</div>
         </div>
 
         <p class="instruction-note">- Para o preenchimento da tabela com números decimais, sempre utilizar "ponto final" e não "vírgula". Ex: 0.10 | 1.5 | 10.5 |</p>
 
-        <!-- 1. LAJE -->
-        <div class="calc-section" id="sectionLaje">
-            <div class="calc-section-title">Laje</div>
-            <div class="calc-row">
-                <div class="calc-field w-field-140">
-                    <label for="lajeCompInput">Comprimento</label>
-                    <input type="number" step="0.01" id="lajeCompInput" class="calc-input laje-comp" placeholder="0.00" title="Comprimento da laje em metros">
+        <!-- Laje -->
+        <section class="calc-group" id="groupLaje">
+            <div class="calc-group-title">Laje</div>
+            <div class="calc-line">
+                <div class="input-item w-med">
+                    <label for="lajeComp">Comprimento</label>
+                    <input type="text" id="lajeComp" class="num-input laje-comp" placeholder="" title="Comprimento da laje">
                 </div>
-                <div class="operator-sign">X</div>
-                <div class="calc-field w-field-140">
-                    <label for="lajeLargInput">Largura</label>
-                    <input type="number" step="0.01" id="lajeLargInput" class="calc-input laje-larg" placeholder="0.00" title="Largura da laje em metros">
+                <div class="op-text">X</div>
+                <div class="input-item w-med">
+                    <label for="lajeLarg">Largura</label>
+                    <input type="text" id="lajeLarg" class="num-input laje-larg" placeholder="" title="Largura da laje">
                 </div>
-                <div class="operator-sign">=</div>
-                <div class="calc-field w-field-140">
-                    <label for="lajeM2Output">Result. M²</label>
-                    <input type="text" id="lajeM2Output" class="laje-m2" readonly value="0.00" title="Área calculada da laje em m²" placeholder="0.00">
+                <div class="op-text">=</div>
+                <div class="input-item w-med">
+                    <label for="lajeM2">Result. M²</label>
+                    <input type="text" id="lajeM2" class="laje-m2" readonly value="" placeholder="" title="Resultado em metros quadrados">
                 </div>
 
-                <div class="trelica-group">
+                <div class="trelica-container">
                     <span>Treliça</span>
-                    <div class="trelica-options">
-                        <label class="trelica-option">
-                            <input type="radio" name="trelica" value="0.08" title="Treliça H8 (espessura 8cm)" checked>
+                    <div class="trelica-radios">
+                        <label class="radio-unit">
+                            <input type="radio" name="trelica" value="0.08" title="H8" checked>
                             <span>H8</span>
                         </label>
-                        <label class="trelica-option">
-                            <input type="radio" name="trelica" value="0.10" title="Treliça H10 (espessura 10cm)">
+                        <label class="radio-unit">
+                            <input type="radio" name="trelica" value="0.10" title="H10">
                             <span>H10</span>
                         </label>
-                        <label class="trelica-option">
-                            <input type="radio" name="trelica" value="0.12" title="Treliça H12 (espessura 12cm)">
+                        <label class="radio-unit">
+                            <input type="radio" name="trelica" value="0.12" title="H12">
                             <span>H12</span>
                         </label>
-                        <label class="trelica-option">
-                            <input type="radio" name="trelica" value="0.16" title="Treliça H16 (espessura 16cm)">
+                        <label class="radio-unit">
+                            <input type="radio" name="trelica" value="0.16" title="H16">
                             <span>H16</span>
                         </label>
                     </div>
                 </div>
 
-                <div class="calc-field w-field-result-laje">
-                    <label for="resLajeM3">Result. M³</label>
-                    <input type="text" id="resLajeM3" readonly value="0.00" title="Volume da laje em m³" placeholder="0.00">
+                <div class="input-item w-res">
+                    <label for="lajeM3">Result. M³</label>
+                    <input type="text" id="lajeM3" class="laje-m3" readonly value="" placeholder="" title="Resultado da laje em metros cúbicos">
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- 2. VIGA BALDRAME -->
-        <div class="calc-section" id="sectionViga">
-            <div class="calc-section-title">Viga Baldrame</div>
-            <div id="vigaRowsContainer">
-                <div class="calc-row viga-row">
-                    <div class="calc-field w-field-110">
+        <!-- Viga Baldrame -->
+        <section class="calc-group" id="groupViga">
+            <div class="calc-group-title">Viga Baldrame</div>
+            <div id="vigaRows">
+                <div class="calc-line viga-line">
+                    <div class="input-item w-qtd">
                         <label>Quantidade</label>
-                        <input type="number" step="1" class="calc-input viga-qtd" placeholder="1" value="1" title="Quantidade de vigas">
+                        <input type="text" class="num-input viga-qtd" placeholder="" title="Quantidade de vigas">
                     </div>
-                    <div class="calc-field w-field-130">
+                    <div class="input-item w-med">
                         <label>Comprimento</label>
-                        <input type="number" step="0.01" class="calc-input viga-comp" placeholder="0.00" title="Comprimento em metros">
+                        <input type="text" class="num-input viga-comp" placeholder="" title="Comprimento">
                     </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field w-field-130">
+                    <div class="op-text">X</div>
+                    <div class="input-item w-med">
                         <label>Largura em CM</label>
-                        <input type="number" step="0.1" class="calc-input viga-larg" placeholder="0" title="Largura da viga em centímetros">
+                        <input type="text" class="num-input viga-larg" placeholder="" title="Largura em CM">
                     </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field w-field-130">
+                    <div class="op-text">X</div>
+                    <div class="input-item w-med">
                         <label>Altura em CM</label>
-                        <input type="number" step="0.1" class="calc-input viga-alt" placeholder="0" title="Altura da viga em centímetros">
+                        <input type="text" class="num-input viga-alt" placeholder="" title="Altura em CM">
                     </div>
-                    <div class="operator-sign">=</div>
-                    <div class="calc-field w-field-result">
+                    <div class="op-text">=</div>
+                    <div class="input-item w-res">
                         <label>Result. M³</label>
-                        <input type="text" class="viga-m3" readonly value="0.00" title="Volume da viga em m³" placeholder="0.00">
+                        <input type="text" class="viga-m3" readonly value="" placeholder="" title="Resultado em metros cúbicos">
                     </div>
                 </div>
             </div>
-            <button type="button" class="btn-add-item" onclick="addVigaRow()">
-                <i class="fa fa-plus"></i> Add +
+            <button type="button" class="btn-add" onclick="addVigaRow()">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Add +
             </button>
-        </div>
+        </section>
 
-        <!-- 3. SAPATA -->
-        <div class="calc-section" id="sectionSapata">
-            <div class="calc-section-title">Sapata</div>
-            <div id="sapataRowsContainer">
-                <div class="calc-row sapata-row">
-                    <div class="calc-field w-field-110">
+        <!-- Sapata -->
+        <section class="calc-group" id="groupSapata">
+            <div class="calc-group-title">Sapata</div>
+            <div id="sapataRows">
+                <div class="calc-line sapata-line">
+                    <div class="input-item w-qtd">
                         <label>Quantidade</label>
-                        <input type="number" step="1" class="calc-input sapata-qtd" placeholder="1" value="1" title="Quantidade de sapatas">
+                        <input type="text" class="num-input sapata-qtd" placeholder="" title="Quantidade de sapatas">
                     </div>
-                    <div class="calc-field w-field-130">
+                    <div class="input-item w-med">
                         <label>Comprimento</label>
-                        <input type="number" step="0.01" class="calc-input sapata-comp" placeholder="0.00" title="Comprimento da sapata em metros">
+                        <input type="text" class="num-input sapata-comp" placeholder="" title="Comprimento">
                     </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field w-field-130">
+                    <div class="op-text">X</div>
+                    <div class="input-item w-med">
                         <label>Largura em CM</label>
-                        <input type="number" step="0.1" class="calc-input sapata-larg" placeholder="0" title="Largura da sapata em centímetros">
+                        <input type="text" class="num-input sapata-larg" placeholder="" title="Largura em CM">
                     </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field w-field-130">
+                    <div class="op-text">X</div>
+                    <div class="input-item w-med">
                         <label>Altura em CM</label>
-                        <input type="number" step="0.1" class="calc-input sapata-alt" placeholder="0" title="Altura da sapata em centímetros">
+                        <input type="text" class="num-input sapata-alt" placeholder="" title="Altura em CM">
                     </div>
-                    <div class="operator-sign">=</div>
-                    <div class="calc-field w-field-result">
+                    <div class="op-text">=</div>
+                    <div class="input-item w-res">
                         <label>Result. M³</label>
-                        <input type="text" class="sapata-m3" readonly value="0.00" title="Volume da sapata em m³" placeholder="0.00">
+                        <input type="text" class="sapata-m3" readonly value="" placeholder="" title="Resultado em metros cúbicos">
                     </div>
                 </div>
             </div>
-            <button type="button" class="btn-add-item" onclick="addSapataRow()">
-                <i class="fa fa-plus"></i> Add +
+            <button type="button" class="btn-add" onclick="addSapataRow()">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Add +
             </button>
-        </div>
+        </section>
 
-        <!-- 4. BROCA -->
-        <div class="calc-section" id="sectionBroca">
-            <div class="calc-section-title">Broca</div>
-            <div id="brocaRowsContainer">
-                <div class="calc-row broca-row">
-                    <div class="calc-field w-field-100">
+        <!-- Broca -->
+        <section class="calc-group" id="groupBroca">
+            <div class="calc-group-title">Broca</div>
+            <div id="brocaRows">
+                <div class="calc-line broca-line">
+                    <div class="input-item w-qtd">
                         <label>Quantidade</label>
-                        <input type="number" step="1" class="calc-input broca-qtd" placeholder="1" value="1" title="Quantidade de brocas">
+                        <input type="text" class="num-input broca-qtd" placeholder="" title="Quantidade de brocas">
                     </div>
-                    <div class="calc-field w-field-140">
+                    <div class="input-item w-form-label">
                         <label>(3.1416 X r²) x Altura</label>
-                        <input type="text" readonly value="Fórmula Circular" class="field-formula" title="Fórmula geométrica circular para broca" placeholder="Fórmula">
+                        <input type="text" readonly value="4" placeholder="" title="Constante da fórmula">
                     </div>
-                    <div class="calc-field w-field-80">
+                    <div class="input-item w-const">
                         <label>PI</label>
-                        <input type="text" readonly value="3.1416" title="Constante Pi (3.1416)" placeholder="3.1416">
+                        <input type="text" readonly value="3.1416" placeholder="" title="PI">
                     </div>
-                    <div class="calc-field w-field-120">
+                    <div class="input-item w-diam">
                         <label>Diâmetro CM</label>
-                        <input type="number" step="0.1" class="calc-input broca-diam" placeholder="0" title="Diâmetro da broca em centímetros">
+                        <input type="text" class="num-input broca-diam" placeholder="" title="Diâmetro em CM">
                     </div>
-                    <div class="calc-field w-field-80">
+                    <div class="input-item w-const">
                         <label>Dividido por</label>
-                        <input type="text" readonly value="4" title="Divisor da fórmula da área circular (4)" placeholder="4">
+                        <input type="text" readonly value="4" placeholder="" title="Divisor da fórmula">
                     </div>
-                    <div class="calc-field w-field-130">
+                    <div class="input-item w-med">
                         <label>Altura em metros</label>
-                        <input type="number" step="0.01" class="calc-input broca-alt" placeholder="0.00" title="Profundidade ou altura da broca em metros">
+                        <input type="text" class="num-input broca-alt" placeholder="" title="Altura em metros">
                     </div>
-                    <div class="calc-field w-field-result">
+                    <div class="input-item w-res">
                         <label>Result. M³</label>
-                        <input type="text" class="broca-m3" readonly value="0.00" title="Volume da broca em m³" placeholder="0.00">
+                        <input type="text" class="broca-m3" readonly value="" placeholder="" title="Resultado em metros cúbicos">
                     </div>
                 </div>
             </div>
-            <button type="button" class="btn-add-item" onclick="addBrocaRow()">
-                <i class="fa fa-plus"></i> Add +
+            <button type="button" class="btn-add" onclick="addBrocaRow()">
+                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                Add +
             </button>
-        </div>
+        </section>
 
-        <!-- RESULTADO TOTAL (Resumo idêntico às imagens) -->
-        <div class="total-summary-card">
-            <div class="calc-section-title">Resultado Total</div>
-            <div class="total-boxes-row">
-                <div class="total-box">
-                    <label for="totalBoxLaje">Laje</label>
-                    <input type="text" id="totalBoxLaje" readonly value="0.00 m³" title="Volume total de laje em m³" placeholder="0.00 m³">
+        <!-- Resultado Total -->
+        <section class="summary-section">
+            <div class="summary-title">Resultado Total</div>
+            <div class="summary-boxes">
+                <div class="summary-box">
+                    <label for="totalLaje">Laje</label>
+                    <input type="text" id="totalLaje" readonly value="" placeholder="" title="Total de Laje">
                 </div>
-                <div class="total-box">
-                    <label for="totalBoxViga">Viga Baldrame</label>
-                    <input type="text" id="totalBoxViga" readonly value="0.00 m³" title="Volume total de viga baldrame em m³" placeholder="0.00 m³">
+                <div class="summary-box">
+                    <label for="totalViga">Viga Baldrame</label>
+                    <input type="text" id="totalViga" readonly value="" placeholder="" title="Total de Viga Baldrame">
                 </div>
-                <div class="total-box">
-                    <label for="totalBoxSapata">Sapata</label>
-                    <input type="text" id="totalBoxSapata" readonly value="0.00 m³" title="Volume total de sapata em m³" placeholder="0.00 m³">
+                <div class="summary-box">
+                    <label for="totalSapata">Sapata</label>
+                    <input type="text" id="totalSapata" readonly value="" placeholder="" title="Total de Sapata">
                 </div>
-                <div class="total-box">
-                    <label for="totalBoxBroca">Broca</label>
-                    <input type="text" id="totalBoxBroca" readonly value="0.00 m³" title="Volume total de broca em m³" placeholder="0.00 m³">
+                <div class="summary-box">
+                    <label for="totalBroca">Broca</label>
+                    <input type="text" id="totalBroca" readonly value="" placeholder="" title="Total de Broca">
                 </div>
-                <div class="total-box highlight">
-                    <label for="totalBoxGeral">Resultado total M³</label>
-                    <input type="text" id="totalBoxGeral" readonly value="0.00 m³" title="Volume geral total somado em m³" placeholder="0.00 m³">
+                <div class="summary-box">
+                    <label for="totalGeral">Resultado total M³</label>
+                    <input type="text" id="totalGeral" readonly value="" placeholder="" title="Resultado total geral">
                 </div>
             </div>
 
-            <!-- Disclaimer legal idêntico ao modelo da imagem -->
-            <p class="disclaimer-text">
+            <p class="disclaimer-red">
                 O cálculo do volume de concreto é de responsabilidade do cliente. O resultado final poderá sofrer pequenas alterações, considerando a margem de risco de perda do concreto durante a execução da obra.
             </p>
 
-            <!-- Card de Métrica Inteligente Empresarial e Estimativa Comercial Base -->
-            <div class="commercial-metric-card" id="commercialCard">
-                <div class="metric-details">
-                    <span class="metric-badge">Métrica Comercial Inteligente Cortesia</span>
-                    <h2 class="metric-title">Estimativa Base do Orçamento</h2>
-                    <p class="metric-desc">
-                        Cálculo baseado no volume exato com margem técnica de segurança (5%). Inclui concreto usinado FCK 25/30 + suporte logístico de central.
-                    </p>
-                </div>
-                <div class="metric-values">
-                    <div class="metric-price-label">Valor Estimado Base:</div>
-                    <div class="metric-price-value" id="valPrecoEstimado">R$ 0,00</div>
-                    <div class="metric-unit-note" id="valPrecoPorM3">Referência sincronizada em tempo real</div>
-                </div>
-            </div>
-
-            <!-- Botão de Ação: Concluir Cálculo e Enviar via WhatsApp -->
-            <div class="actions-bar">
-                <button type="button" class="btn-calc-submit" id="btnFinalizarCalculo">
-                    <i class="fa fa-calculator"></i> Calcular e Enviar Proposta
+            <div class="btn-calcular-wrapper">
+                <button type="button" class="btn-calcular" id="btnCalcular">
+                    <!-- Vetor SVG de Calculadora Oficial idêntico ao modelo original -->
+                    <svg viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM7 7h10v2H7V7zm0 4h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm-8 4h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z"/>
+                    </svg>
+                    Calcular
                 </button>
             </div>
+        </section>
+    </main>
+
+    <!-- 3. Banner Azul Escuro e Rodapé idêntico à Imagem 2 -->
+    <div class="blue-footer-banner">
+        <div class="blue-banner-inner">
+            <img src="images/simbolo-cortesia-sem fundo.png" alt="Cortesia Concreto" class="banner-logo-img">
+            <div class="slogan-tag">Qualidade, Pontualidade e Segurança em sua obra.</div>
         </div>
     </div>
 
-    <!-- Banner Blue Strip identical to Image 1 -->
-    <div class="footer-banner-strip">
-        <div class="banner-content">
-            <div class="banner-logo-wrapper">
-                <img src="images/simbolo-cortesia-sem fundo.png" alt="Cortesia Concreto">
-            </div>
-            <div class="banner-text-tag">
-                Qualidade, Pontualidade e Segurança em sua obra.
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom copyright -->
-    <div class="footer-bottom-bar">
+    <footer class="footer-credits">
         Cortesia Concreto | Todos os direitos reservados | Criação: Arteh Comunicação
-    </div>
+    </footer>
 
-    <!-- Floating WhatsApp Help Button -->
-    <a href="https://api.whatsapp.com/send?phone=551129163000" id="btnFloatWa" class="floating-wa-help" target="_blank" rel="noopener" title="Atendimento Técnico WhatsApp">
-        <i class="fa fa-whatsapp wa-icon"></i>
-        <span>Atendimento Técnico WhatsApp</span>
-    </a>
-
-    <!-- Scripts de Inteligência, Sincronização Dinâmica e Criptografia -->
-    <script src="js/jquery-1.12.4.min.js"></script>
+    <!-- Lógica de Inteligência Estrutural, Validação Estrita de Caracteres, Criptografia e WhatsApp -->
     <script>
         (function() {
             // Data atual formatada (DD/MM/AAAA)
             const today = new Date();
-            const dayStr = String(today.getDate()).padStart(2, '0');
-            const monthStr = String(today.getMonth() + 1).padStart(2, '0');
-            const yearStr = today.getFullYear();
-            const formattedDate = `${dayStr}/${monthStr}/${yearStr}`;
-            document.getElementById('displayDataHoje').textContent = formattedDate;
+            const d = String(today.getDate()).padStart(2, '0');
+            const m = String(today.getMonth() + 1).padStart(2, '0');
+            const y = today.getFullYear();
+            const dataHojeFormatada = `${d}/${m}/${y}`;
+            document.getElementById('displayDataHoje').textContent = dataHojeFormatada;
 
-            // Configurações dinâmicas carregadas do backend
-            let currentWaNumber = '551129163000';
-            let precoM3Base = 385.00;
-            let bombeamentoBase = 650.00;
+            let targetWa = '551129163000';
+            let precoM3 = 385.00;
+            let taxaBomba = 650.00;
 
-            // 1. Sincronização com o Backend
+            // Sincronização em tempo real com o backend e bot telegram
             fetch('/api/config')
                 .then(r => r.json())
                 .then(cfg => {
-                    if (cfg.whatsapp) {
-                        currentWaNumber = cfg.whatsapp.replace(/\D/g, '');
-                        const floatWa = document.getElementById('btnFloatWa');
-                        if (floatWa) {
-                            floatWa.href = `https://api.whatsapp.com/send?phone=${currentWaNumber}&text=${encodeURIComponent('Olá! Gostaria de suporte técnico na calculadora de concreto.')}`;
-                        }
-                    }
-                    if (cfg.concretoM3Price && !isNaN(cfg.concretoM3Price)) {
-                        precoM3Base = parseFloat(cfg.concretoM3Price);
-                    }
-                    if (cfg.bombeamentoBasePrice && !isNaN(cfg.bombeamentoBasePrice)) {
-                        bombeamentoBase = parseFloat(cfg.bombeamentoBasePrice);
-                    }
-                    document.getElementById('valPrecoPorM3').textContent = `Métrica Base: R$ ${precoM3Base.toFixed(2)}/m³ (sincronizada com central)`;
-                    recalculateAll();
+                    if (cfg.whatsapp) targetWa = cfg.whatsapp.replace(/\D/g, '');
+                    if (cfg.concretoM3Price) precoM3 = parseFloat(cfg.concretoM3Price);
+                    if (cfg.bombeamentoBasePrice) taxaBomba = parseFloat(cfg.bombeamentoBasePrice);
                 })
                 .catch(() => {});
 
-            // Helper para formatar moeda Real
-            function formatCurrency(val) {
-                return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            // VALIDAÇÃO AVANÇADA DE ENTRADA DE CARACTERES
+            // Permite somente dígitos e no máximo um ponto decimal
+            function sanitizeNumericInput(val) {
+                // Substitui vírgula digitada inadvertidamente por ponto
+                let clean = val.replace(',', '.');
+                // Remove qualquer caractere que não seja número ou ponto
+                clean = clean.replace(/[^0-9.]/g, '');
+                // Impede múltiplos pontos
+                const parts = clean.split('.');
+                if (parts.length > 2) {
+                    clean = parts[0] + '.' + parts.slice(1).join('');
+                }
+                return clean;
             }
 
-            // Helper para obter float seguro
-            function getVal(input) {
-                if (!input) return 0;
-                let v = input.value.replace(',', '.');
-                let parsed = parseFloat(v);
+            document.addEventListener('input', function(e) {
+                if (e.target.classList.contains('num-input')) {
+                    const original = e.target.value;
+                    const sanitized = sanitizeNumericInput(original);
+                    if (original !== sanitized) {
+                        e.target.value = sanitized;
+                    }
+                    e.target.classList.remove('input-error');
+                    execCalculations();
+                }
+            });
+
+            document.querySelectorAll('input[name="trelica"]').forEach(function(r) {
+                r.addEventListener('change', execCalculations);
+            });
+
+            function toFloat(val) {
+                if (!val) return 0;
+                const parsed = parseFloat(val);
                 return isNaN(parsed) ? 0 : parsed;
             }
 
-            // 2. FUNÇÕES DE CÁLCULO ESTRUTURAL
-            window.recalculateAll = function() {
-                // A) Laje
-                const lajeComp = getVal(document.querySelector('.laje-comp'));
-                const lajeLarg = getVal(document.querySelector('.laje-larg'));
-                const lajeM2 = lajeComp * lajeLarg;
-                document.querySelector('.laje-m2').value = lajeM2.toFixed(2);
+            function execCalculations() {
+                // 1. Laje
+                const lajeC = toFloat(document.querySelector('.laje-comp').value);
+                const lajeL = toFloat(document.querySelector('.laje-larg').value);
+                const m2 = lajeC * lajeL;
+                document.querySelector('.laje-m2').value = m2 > 0 ? m2.toFixed(2) : '';
 
-                const trelicaChecked = document.querySelector('input[name="trelica"]:checked');
-                const trelicaCoeff = trelicaChecked ? parseFloat(trelicaChecked.value) : 0.08;
-                const lajeM3 = lajeM2 * trelicaCoeff;
-                document.getElementById('resLajeM3').value = lajeM3.toFixed(2);
+                const trelicaOpt = document.querySelector('input[name="trelica"]:checked');
+                const trelicaCoeff = trelicaOpt ? parseFloat(trelicaOpt.value) : 0.08;
+                const lajeM3 = m2 * trelicaCoeff;
+                document.getElementById('lajeM3').value = lajeM3 > 0 ? lajeM3.toFixed(2) : '';
 
-                // B) Viga Baldrame (todas as linhas)
-                let totalVigaM3 = 0;
-                document.querySelectorAll('.viga-row').forEach(row => {
-                    const qtd = getVal(row.querySelector('.viga-qtd')) || 1;
-                    const comp = getVal(row.querySelector('.viga-comp'));
-                    const largCM = getVal(row.querySelector('.viga-larg'));
-                    const altCM = getVal(row.querySelector('.viga-alt'));
-                    const m3 = qtd * comp * (largCM / 100) * (altCM / 100);
-                    row.querySelector('.viga-m3').value = m3.toFixed(2);
-                    totalVigaM3 += m3;
+                // 2. Viga Baldrame
+                let totalViga = 0;
+                document.querySelectorAll('.viga-line').forEach(function(line) {
+                    const qtd = toFloat(line.querySelector('.viga-qtd').value) || (line.querySelector('.viga-comp').value ? 1 : 0);
+                    const comp = toFloat(line.querySelector('.viga-comp').value);
+                    const larg = toFloat(line.querySelector('.viga-larg').value);
+                    const alt = toFloat(line.querySelector('.viga-alt').value);
+                    const res = qtd * comp * (larg / 100) * (alt / 100);
+                    line.querySelector('.viga-m3').value = res > 0 ? res.toFixed(2) : '';
+                    totalViga += res;
                 });
 
-                // C) Sapata (todas as linhas)
-                let totalSapataM3 = 0;
-                document.querySelectorAll('.sapata-row').forEach(row => {
-                    const qtd = getVal(row.querySelector('.sapata-qtd')) || 1;
-                    const comp = getVal(row.querySelector('.sapata-comp'));
-                    const largCM = getVal(row.querySelector('.sapata-larg'));
-                    const altCM = getVal(row.querySelector('.sapata-alt'));
-                    const m3 = qtd * comp * (largCM / 100) * (altCM / 100);
-                    row.querySelector('.sapata-m3').value = m3.toFixed(2);
-                    totalSapataM3 += m3;
+                // 3. Sapata
+                let totalSapata = 0;
+                document.querySelectorAll('.sapata-line').forEach(function(line) {
+                    const qtd = toFloat(line.querySelector('.sapata-qtd').value) || (line.querySelector('.sapata-comp').value ? 1 : 0);
+                    const comp = toFloat(line.querySelector('.sapata-comp').value);
+                    const larg = toFloat(line.querySelector('.sapata-larg').value);
+                    const alt = toFloat(line.querySelector('.sapata-alt').value);
+                    const res = qtd * comp * (larg / 100) * (alt / 100);
+                    line.querySelector('.sapata-m3').value = res > 0 ? res.toFixed(2) : '';
+                    totalSapata += res;
                 });
 
-                // D) Broca (todas as linhas) - Fórmula: (PI * d² / 4) * altura
-                let totalBrocaM3 = 0;
-                document.querySelectorAll('.broca-row').forEach(row => {
-                    const qtd = getVal(row.querySelector('.broca-qtd')) || 1;
-                    const diamCM = getVal(row.querySelector('.broca-diam'));
-                    const altM = getVal(row.querySelector('.broca-alt'));
+                // 4. Broca: (PI * d² / 4) * Altura
+                let totalBroca = 0;
+                document.querySelectorAll('.broca-line').forEach(function(line) {
+                    const qtd = toFloat(line.querySelector('.broca-qtd').value) || (line.querySelector('.broca-alt').value ? 1 : 0);
+                    const diamCM = toFloat(line.querySelector('.broca-diam').value);
+                    const altM = toFloat(line.querySelector('.broca-alt').value);
                     const diamM = diamCM / 100;
                     const area = (3.1416 * Math.pow(diamM, 2)) / 4;
-                    const m3 = qtd * area * altM;
-                    row.querySelector('.broca-m3').value = m3.toFixed(2);
-                    totalBrocaM3 += m3;
+                    const res = qtd * area * altM;
+                    line.querySelector('.broca-m3').value = res > 0 ? res.toFixed(2) : '';
+                    totalBroca += res;
                 });
 
                 // TOTAIS
-                const totalGeral = lajeM3 + totalVigaM3 + totalSapataM3 + totalBrocaM3;
+                const totalGeral = lajeM3 + totalViga + totalSapata + totalBroca;
 
-                document.getElementById('totalBoxLaje').value = `${lajeM3.toFixed(2)} m³`;
-                document.getElementById('totalBoxViga').value = `${totalVigaM3.toFixed(2)} m³`;
-                document.getElementById('totalBoxSapata').value = `${totalSapataM3.toFixed(2)} m³`;
-                document.getElementById('totalBoxBroca').value = `${totalBrocaM3.toFixed(2)} m³`;
-                document.getElementById('totalBoxGeral').value = `${totalGeral.toFixed(2)} m³`;
-
-                // MÉTRICA INTELIGENTE EMPRESARIAL
-                // Considera margem de perda recomendada de 5% da central + valor por m³
-                if (totalGeral > 0) {
-                    const margemSeguranca = totalGeral * 1.05;
-                    const valorConcreto = margemSeguranca * precoM3Base;
-                    // Se for maior que 8m³, inclui estimativa com bombeamento
-                    const valorTotalEstimado = totalGeral >= 8 ? (valorConcreto + bombeamentoBase) : valorConcreto;
-                    document.getElementById('valPrecoEstimado').textContent = formatCurrency(valorTotalEstimado);
-                } else {
-                    document.getElementById('valPrecoEstimado').textContent = 'R$ 0,00';
-                }
+                document.getElementById('totalLaje').value = lajeM3 > 0 ? lajeM3.toFixed(2) : '';
+                document.getElementById('totalViga').value = totalViga > 0 ? totalViga.toFixed(2) : '';
+                document.getElementById('totalSapata').value = totalSapata > 0 ? totalSapata.toFixed(2) : '';
+                document.getElementById('totalBroca').value = totalBroca > 0 ? totalBroca.toFixed(2) : '';
+                document.getElementById('totalGeral').value = totalGeral > 0 ? totalGeral.toFixed(2) : '';
 
                 return {
                     lajeM3,
-                    totalVigaM3,
-                    totalSapataM3,
-                    totalBrocaM3,
+                    totalViga,
+                    totalSapata,
+                    totalBroca,
                     totalGeral
                 };
-            };
+            }
 
-            // Event Listeners para recálculo automático em tempo real
-            document.addEventListener('input', function(e) {
-                if (e.target.classList.contains('calc-input')) {
-                    recalculateAll();
-                }
-            });
-
-            document.querySelectorAll('input[name="trelica"]').forEach(radio => {
-                radio.addEventListener('change', recalculateAll);
-            });
-
-            // 3. ADICIONAR NOVAS LINHAS DINÂMICAS
+            // FUNÇÕES PARA ADICIONAR LINHAS
             window.addVigaRow = function() {
-                const container = document.getElementById('vigaRowsContainer');
-                const row = document.createElement('div');
-                row.className = 'calc-row viga-row';
-                row.innerHTML = `
-                    <div class="calc-field w-field-110">
-                        <input type="number" step="1" class="calc-input viga-qtd" placeholder="1" value="1" title="Quantidade de vigas">
+                const container = document.getElementById('vigaRows');
+                const div = document.createElement('div');
+                div.className = 'calc-line viga-line';
+                div.innerHTML = `
+                    <div class="input-item w-qtd">
+                        <input type="text" class="num-input viga-qtd" placeholder="" title="Quantidade">
                     </div>
-                    <div class="calc-field w-field-130">
-                        <input type="number" step="0.01" class="calc-input viga-comp" placeholder="0.00" title="Comprimento em metros">
+                    <div class="input-item w-med">
+                        <input type="text" class="num-input viga-comp" placeholder="" title="Comprimento">
                     </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field w-field-130">
-                        <input type="number" step="0.1" class="calc-input viga-larg" placeholder="0" title="Largura em centímetros">
+                    <div class="op-text">X</div>
+                    <div class="input-item w-med">
+                        <input type="text" class="num-input viga-larg" placeholder="" title="Largura em CM">
                     </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field w-field-130">
-                        <input type="number" step="0.1" class="calc-input viga-alt" placeholder="0" title="Altura em centímetros">
+                    <div class="op-text">X</div>
+                    <div class="input-item w-med">
+                        <input type="text" class="num-input viga-alt" placeholder="" title="Altura em CM">
                     </div>
-                    <div class="operator-sign">=</div>
-                    <div class="calc-field w-field-result">
-                        <input type="text" class="viga-m3" readonly value="0.00" placeholder="0.00" title="Volume da viga em m³">
+                    <div class="op-text">=</div>
+                    <div class="input-item w-res">
+                        <input type="text" class="viga-m3" readonly value="" placeholder="" title="Resultado em metros cúbicos">
                     </div>
                 `;
-                container.appendChild(row);
-                recalculateAll();
+                container.appendChild(div);
             };
 
             window.addSapataRow = function() {
-                const container = document.getElementById('sapataRowsContainer');
-                const row = document.createElement('div');
-                row.className = 'calc-row sapata-row';
-                row.innerHTML = `
-                    <div class="calc-field w-field-110">
-                        <input type="number" step="1" class="calc-input sapata-qtd" placeholder="1" value="1" title="Quantidade de sapatas">
+                const container = document.getElementById('sapataRows');
+                const div = document.createElement('div');
+                div.className = 'calc-line sapata-line';
+                div.innerHTML = `
+                    <div class="input-item w-qtd">
+                        <input type="text" class="num-input sapata-qtd" placeholder="" title="Quantidade">
                     </div>
-                    <div class="calc-field w-field-130">
-                        <input type="number" step="0.01" class="calc-input sapata-comp" placeholder="0.00" title="Comprimento em metros">
+                    <div class="input-item w-med">
+                        <input type="text" class="num-input sapata-comp" placeholder="" title="Comprimento">
                     </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field w-field-130">
-                        <input type="number" step="0.1" class="calc-input sapata-larg" placeholder="0" title="Largura em centímetros">
+                    <div class="op-text">X</div>
+                    <div class="input-item w-med">
+                        <input type="text" class="num-input sapata-larg" placeholder="" title="Largura em CM">
                     </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field w-field-130">
-                        <input type="number" step="0.1" class="calc-input sapata-alt" placeholder="0" title="Altura em centímetros">
+                    <div class="op-text">X</div>
+                    <div class="input-item w-med">
+                        <input type="text" class="num-input sapata-alt" placeholder="" title="Altura em CM">
                     </div>
-                    <div class="operator-sign">=</div>
-                    <div class="calc-field w-field-result">
-                        <input type="text" class="sapata-m3" readonly value="0.00" placeholder="0.00" title="Volume da sapata em m³">
+                    <div class="op-text">=</div>
+                    <div class="input-item w-res">
+                        <input type="text" class="sapata-m3" readonly value="" placeholder="" title="Resultado em metros cúbicos">
                     </div>
                 `;
-                container.appendChild(row);
-                recalculateAll();
+                container.appendChild(div);
             };
 
             window.addBrocaRow = function() {
-                const container = document.getElementById('brocaRowsContainer');
-                const row = document.createElement('div');
-                row.className = 'calc-row broca-row';
-                row.innerHTML = `
-                    <div class="calc-field w-field-100">
-                        <input type="number" step="1" class="calc-input broca-qtd" placeholder="1" value="1" title="Quantidade de brocas">
+                const container = document.getElementById('brocaRows');
+                const div = document.createElement('div');
+                div.className = 'calc-line broca-line';
+                div.innerHTML = `
+                    <div class="input-item w-qtd">
+                        <input type="text" class="num-input broca-qtd" placeholder="" title="Quantidade">
                     </div>
-                    <div class="calc-field w-field-140">
-                        <input type="text" readonly value="Fórmula Circular" class="field-formula" placeholder="Fórmula" title="Fórmula geométrica circular">
+                    <div class="input-item w-form-label">
+                        <input type="text" readonly value="4" placeholder="" title="Fórmula">
                     </div>
-                    <div class="calc-field w-field-80">
-                        <input type="text" readonly value="3.1416" placeholder="3.1416" title="Constante Pi">
+                    <div class="input-item w-const">
+                        <input type="text" readonly value="3.1416" placeholder="" title="PI">
                     </div>
-                    <div class="calc-field w-field-120">
-                        <input type="number" step="0.1" class="calc-input broca-diam" placeholder="0" title="Diâmetro em centímetros">
+                    <div class="input-item w-diam">
+                        <input type="text" class="num-input broca-diam" placeholder="" title="Diâmetro em CM">
                     </div>
-                    <div class="calc-field w-field-80">
-                        <input type="text" readonly value="4" placeholder="4" title="Divisor da fórmula">
+                    <div class="input-item w-const">
+                        <input type="text" readonly value="4" placeholder="" title="Divisor">
                     </div>
-                    <div class="calc-field w-field-130">
-                        <input type="number" step="0.01" class="calc-input broca-alt" placeholder="0.00" title="Altura em metros">
+                    <div class="input-item w-med">
+                        <input type="text" class="num-input broca-alt" placeholder="" title="Altura em metros">
                     </div>
-                    <div class="calc-field w-field-result">
-                        <input type="text" class="broca-m3" readonly value="0.00" placeholder="0.00" title="Volume da broca em m³">
+                    <div class="input-item w-res">
+                        <input type="text" class="broca-m3" readonly value="" placeholder="" title="Resultado em metros cúbicos">
                     </div>
                 `;
-                container.appendChild(row);
-                recalculateAll();
+                container.appendChild(div);
             };
 
-            // 4. CRIPTOGRAFIA & SINCRONIZAÇÃO COM O TELEGRAM BOT & WHATSAPP
-            function encryptData(obj) {
+            // CRIPTOGRAFIA & ENVIO AO WHATSAPP E TELEGRAM
+            function encryptPayload(data) {
                 try {
-                    const raw = JSON.stringify(obj);
+                    const raw = JSON.stringify(data);
                     return btoa(encodeURIComponent(raw).split('').reverse().join(''));
                 } catch(e) {
-                    return JSON.stringify(obj);
+                    return JSON.stringify(data);
                 }
             }
 
-            document.getElementById('btnFinalizarCalculo').addEventListener('click', function() {
-                const results = recalculateAll();
+            document.getElementById('btnCalcular').addEventListener('click', function() {
+                const r = execCalculations();
 
-                const cliente = (document.getElementById('inputCliente').value || 'Não informado').trim();
+                const cliente = (document.getElementById('inputCliente').value || 'Cliente Cortesia').trim();
                 const responsavel = (document.getElementById('inputResponsavel').value || 'Não informado').trim();
                 const email = (document.getElementById('inputEmail').value || 'Não informado').trim();
-                const totalM3Str = results.totalGeral.toFixed(2);
-                const precoEstimadoStr = document.getElementById('valPrecoEstimado').textContent;
 
-                const detalhesEstrutura = 
-                    ` • Laje: ${results.lajeM3.toFixed(2)} m³\n` +
-                    ` • Viga Baldrame: ${results.totalVigaM3.toFixed(2)} m³\n` +
-                    ` • Sapata: ${results.totalSapataM3.toFixed(2)} m³\n` +
-                    ` • Broca: ${results.totalBrocaM3.toFixed(2)} m³`;
+                const totalM3 = r.totalGeral > 0 ? r.totalGeral.toFixed(2) : '0.00';
 
-                // Mensagem Formal Pronta para WhatsApp
-                const msgWhatsapp = 
-                    `*SOLICITAÇÃO DE ORÇAMENTO FORMAL - CORTESIA CONCRETO*\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                    `👤 *Cliente:* ${cliente}\n` +
-                    `👷 *Responsável:* ${responsavel}\n` +
-                    `✉️ *E-mail:* ${email}\n` +
-                    `📅 *Data da Consulta:* ${formattedDate}\n\n` +
-                    `📊 *MEMORIAL DE CÁLCULO DE VOLUME:*\n` +
-                    `${detalhesEstrutura}\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                    `📐 *VOLUME TOTAL ESTIMADO:* *${totalM3Str} m³*\n` +
-                    `💰 *ESTIMATIVA BASE SUGERIDA:* *${precoEstimadoStr}*\n` +
-                    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
-                    `Olá! Gostaria de validar esta cubagem e receber a proposta comercial formal da Cortesia Concreto para o fornecimento do concreto usinado.`;
+                // Cálculo empresarial de valor base inteligente (com 5% de margem técnica da usina)
+                let valorEstimadoTotal = 0;
+                if (r.totalGeral > 0) {
+                    const margemSegura = r.totalGeral * 1.05;
+                    const valorConcreto = margemSegura * precoM3;
+                    valorEstimadoTotal = r.totalGeral >= 8 ? (valorConcreto + taxaBomba) : valorConcreto;
+                }
+                const precoFormatado = valorEstimadoTotal > 0 
+                    ? valorEstimadoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                    : 'A calcular pela Central';
 
-                // 1. Enviar telemetria criptografada ao backend e ao Bot Telegram do Admin
-                const payload = {
+                const detalhamento = 
+                    ` • Laje: ${r.lajeM3 > 0 ? r.lajeM3.toFixed(2) + ' m³' : '0.00 m³'}\n` +
+                    ` • Viga Baldrame: ${r.totalViga > 0 ? r.totalViga.toFixed(2) + ' m³' : '0.00 m³'}\n` +
+                    ` • Sapata: ${r.totalSapata > 0 ? r.totalSapata.toFixed(2) + ' m³' : '0.00 m³'}\n` +
+                    ` • Broca: ${r.totalBroca > 0 ? r.totalBroca.toFixed(2) + ' m³' : '0.00 m³'}`;
+
+                // Criptografia e envio do lead diretamente para a central / bot do telegram
+                const leadData = {
                     action: 'calculadora',
-                    details: `Cálculo de Concreto Realizado: ${totalM3Str} m³ para ${cliente}`,
+                    details: `Cálculo de Concreto: ${totalM3} m³ (${cliente})`,
                     metadata: {
-                        cliente,
-                        responsavel,
-                        email,
-                        totalM3: totalM3Str,
-                        estimativaBase: precoEstimadoStr,
-                        detalhes: detalhesEstrutura,
-                        data: formattedDate
+                        cliente: cliente,
+                        responsavel: responsavel,
+                        email: email,
+                        totalM3: totalM3,
+                        estimativaBase: precoFormatado,
+                        detalhes: detalhamento,
+                        data: dataHojeFormatada
                     }
                 };
-
-                const securedBody = JSON.stringify({ secure: encryptData(payload) });
 
                 fetch('/api/leads', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: securedBody
-                }).catch(() => {});
+                    body: JSON.stringify({ secure: encryptPayload(leadData) })
+                }).catch(function() {});
 
-                // 2. Redirecionar imediatamente para o WhatsApp configurado
-                const waUrl = `https://api.whatsapp.com/send?phone=${currentWaNumber}&text=${encodeURIComponent(msgWhatsapp)}`;
+                // Mensagem Formal idêntica aos padrões de engenharia para o WhatsApp
+                const msgWa = 
+                    `*MEMORIAL DE CÁLCULO DE CONCRETO - CORTESIA CONCRETO*\n` +
+                    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                    `👤 *Cliente:* ${cliente}\n` +
+                    `👷 *Responsável:* ${responsavel}\n` +
+                    `✉️ *E-mail:* ${email}\n` +
+                    `📅 *Data da Consulta:* ${dataHojeFormatada}\n\n` +
+                    `📊 *DIMENSIONAMENTO DE VOLUME:*\n` +
+                    `${detalhamento}\n` +
+                    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                    `📐 *VOLUME TOTAL:* *${totalM3} m³*\n` +
+                    `💰 *ESTIMATIVA BASE SUGERIDA:* *${precoFormatado}*\n` +
+                    `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
+                    `Olá! Gostaria de confirmar a cubagem acima e solicitar a cotação formal com a usina da Cortesia Concreto.`;
+
+                // Redirecionamento instantâneo para o WhatsApp do Administrador Supremo
+                const waUrl = `https://api.whatsapp.com/send?phone=${targetWa}&text=${encodeURIComponent(msgWa)}`;
                 window.open(waUrl, '_blank');
             });
 
