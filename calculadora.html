@@ -170,6 +170,17 @@
             flex-direction: column;
         }
 
+        /* Classes semânticas para larguras dos campos */
+        .w-field-80 { width: 80px; }
+        .w-field-100 { width: 100px; }
+        .w-field-110 { width: 110px; }
+        .w-field-120 { width: 120px; }
+        .w-field-130 { width: 130px; }
+        .w-field-140 { width: 140px; }
+        .w-field-result { width: 130px; margin-left: auto; }
+        .w-field-result-laje { width: 140px; margin-left: auto; }
+        .field-formula { font-size: 11px; }
+
         .calc-field label {
             font-size: 10px;
             color: #555555;
@@ -399,6 +410,11 @@
             font-weight: 600;
         }
 
+        .actions-bar {
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
         /* Main Calculate & Send Button */
         .btn-calc-submit {
             background-color: #5bc0de;
@@ -503,9 +519,14 @@
             text-decoration: none;
         }
 
+        .wa-icon {
+            font-size: 18px;
+        }
+
         @media (max-width: 768px) {
             .client-info-bar { flex-direction: column; align-items: stretch; }
             .calc-row { flex-direction: column; align-items: stretch; gap: 10px; }
+            .w-field-80, .w-field-100, .w-field-110, .w-field-120, .w-field-130, .w-field-140, .w-field-result, .w-field-result-laje { width: 100%; margin-left: 0; }
             .operator-sign { display: none; }
             .banner-content { flex-direction: column; text-align: center; }
             .banner-text-tag { clip-path: none; border-radius: 4px; }
@@ -519,7 +540,7 @@
     <!-- Header identical to images -->
     <header class="header-curve-bg">
         <div class="header-container">
-            <a href="index.html">
+            <a href="index.html" title="Cortesia Concreto - Página Inicial">
                 <img src="images/simbolo-cortesia-sem fundo.png" alt="Cortesia Concreto" class="header-logo">
             </a>
             <p class="header-slogan">Qualidade, Pontualidade e Segurança em sua Obra</p>
@@ -534,13 +555,13 @@
         <!-- Header Client Info Bar -->
         <div class="client-info-bar">
             <div class="input-group-custom">
-                <input type="text" id="inputCliente" placeholder="Cliente" autocomplete="name">
+                <input type="text" id="inputCliente" placeholder="Cliente" title="Nome do Cliente" autocomplete="name">
             </div>
             <div class="input-group-custom">
-                <input type="text" id="inputResponsavel" placeholder="Responsável" autocomplete="organization">
+                <input type="text" id="inputResponsavel" placeholder="Responsável" title="Nome do Responsável pela Obra" autocomplete="organization">
             </div>
             <div class="input-group-custom">
-                <input type="email" id="inputEmail" placeholder="E-mail" autocomplete="email">
+                <input type="email" id="inputEmail" placeholder="E-mail" title="E-mail de Contato" autocomplete="email">
             </div>
             <div class="date-badge" id="displayDataHoje">
                 --/--/----
@@ -553,46 +574,46 @@
         <div class="calc-section" id="sectionLaje">
             <div class="calc-section-title">Laje</div>
             <div class="calc-row">
-                <div class="calc-field" style="width: 140px;">
-                    <label>Comprimento</label>
-                    <input type="number" step="0.01" class="calc-input laje-comp" placeholder="0.00">
+                <div class="calc-field w-field-140">
+                    <label for="lajeCompInput">Comprimento</label>
+                    <input type="number" step="0.01" id="lajeCompInput" class="calc-input laje-comp" placeholder="0.00" title="Comprimento da laje em metros">
                 </div>
                 <div class="operator-sign">X</div>
-                <div class="calc-field" style="width: 140px;">
-                    <label>Largura</label>
-                    <input type="number" step="0.01" class="calc-input laje-larg" placeholder="0.00">
+                <div class="calc-field w-field-140">
+                    <label for="lajeLargInput">Largura</label>
+                    <input type="number" step="0.01" id="lajeLargInput" class="calc-input laje-larg" placeholder="0.00" title="Largura da laje em metros">
                 </div>
                 <div class="operator-sign">=</div>
-                <div class="calc-field" style="width: 140px;">
-                    <label>Result. M²</label>
-                    <input type="text" class="laje-m2" readonly value="0.00">
+                <div class="calc-field w-field-140">
+                    <label for="lajeM2Output">Result. M²</label>
+                    <input type="text" id="lajeM2Output" class="laje-m2" readonly value="0.00" title="Área calculada da laje em m²" placeholder="0.00">
                 </div>
 
                 <div class="trelica-group">
                     <span>Treliça</span>
                     <div class="trelica-options">
                         <label class="trelica-option">
-                            <input type="radio" name="trelica" value="0.08" checked>
+                            <input type="radio" name="trelica" value="0.08" title="Treliça H8 (espessura 8cm)" checked>
                             <span>H8</span>
                         </label>
                         <label class="trelica-option">
-                            <input type="radio" name="trelica" value="0.10">
+                            <input type="radio" name="trelica" value="0.10" title="Treliça H10 (espessura 10cm)">
                             <span>H10</span>
                         </label>
                         <label class="trelica-option">
-                            <input type="radio" name="trelica" value="0.12">
+                            <input type="radio" name="trelica" value="0.12" title="Treliça H12 (espessura 12cm)">
                             <span>H12</span>
                         </label>
                         <label class="trelica-option">
-                            <input type="radio" name="trelica" value="0.16">
+                            <input type="radio" name="trelica" value="0.16" title="Treliça H16 (espessura 16cm)">
                             <span>H16</span>
                         </label>
                     </div>
                 </div>
 
-                <div class="calc-field" style="width: 140px; margin-left: auto;">
-                    <label>Result. M³</label>
-                    <input type="text" id="resLajeM3" readonly value="0.00">
+                <div class="calc-field w-field-result-laje">
+                    <label for="resLajeM3">Result. M³</label>
+                    <input type="text" id="resLajeM3" readonly value="0.00" title="Volume da laje em m³" placeholder="0.00">
                 </div>
             </div>
         </div>
@@ -602,28 +623,28 @@
             <div class="calc-section-title">Viga Baldrame</div>
             <div id="vigaRowsContainer">
                 <div class="calc-row viga-row">
-                    <div class="calc-field" style="width: 110px;">
+                    <div class="calc-field w-field-110">
                         <label>Quantidade</label>
-                        <input type="number" step="1" class="calc-input viga-qtd" placeholder="1" value="1">
+                        <input type="number" step="1" class="calc-input viga-qtd" placeholder="1" value="1" title="Quantidade de vigas">
                     </div>
-                    <div class="calc-field" style="width: 130px;">
+                    <div class="calc-field w-field-130">
                         <label>Comprimento</label>
-                        <input type="number" step="0.01" class="calc-input viga-comp" placeholder="0.00">
+                        <input type="number" step="0.01" class="calc-input viga-comp" placeholder="0.00" title="Comprimento em metros">
                     </div>
                     <div class="operator-sign">X</div>
-                    <div class="calc-field" style="width: 130px;">
+                    <div class="calc-field w-field-130">
                         <label>Largura em CM</label>
-                        <input type="number" step="0.1" class="calc-input viga-larg" placeholder="0">
+                        <input type="number" step="0.1" class="calc-input viga-larg" placeholder="0" title="Largura da viga em centímetros">
                     </div>
                     <div class="operator-sign">X</div>
-                    <div class="calc-field" style="width: 130px;">
+                    <div class="calc-field w-field-130">
                         <label>Altura em CM</label>
-                        <input type="number" step="0.1" class="calc-input viga-alt" placeholder="0">
+                        <input type="number" step="0.1" class="calc-input viga-alt" placeholder="0" title="Altura da viga em centímetros">
                     </div>
                     <div class="operator-sign">=</div>
-                    <div class="calc-field" style="width: 130px; margin-left: auto;">
+                    <div class="calc-field w-field-result">
                         <label>Result. M³</label>
-                        <input type="text" class="viga-m3" readonly value="0.00">
+                        <input type="text" class="viga-m3" readonly value="0.00" title="Volume da viga em m³" placeholder="0.00">
                     </div>
                 </div>
             </div>
@@ -637,28 +658,28 @@
             <div class="calc-section-title">Sapata</div>
             <div id="sapataRowsContainer">
                 <div class="calc-row sapata-row">
-                    <div class="calc-field" style="width: 110px;">
+                    <div class="calc-field w-field-110">
                         <label>Quantidade</label>
-                        <input type="number" step="1" class="calc-input sapata-qtd" placeholder="1" value="1">
+                        <input type="number" step="1" class="calc-input sapata-qtd" placeholder="1" value="1" title="Quantidade de sapatas">
                     </div>
-                    <div class="calc-field" style="width: 130px;">
+                    <div class="calc-field w-field-130">
                         <label>Comprimento</label>
-                        <input type="number" step="0.01" class="calc-input sapata-comp" placeholder="0.00">
+                        <input type="number" step="0.01" class="calc-input sapata-comp" placeholder="0.00" title="Comprimento da sapata em metros">
                     </div>
                     <div class="operator-sign">X</div>
-                    <div class="calc-field" style="width: 130px;">
+                    <div class="calc-field w-field-130">
                         <label>Largura em CM</label>
-                        <input type="number" step="0.1" class="calc-input sapata-larg" placeholder="0">
+                        <input type="number" step="0.1" class="calc-input sapata-larg" placeholder="0" title="Largura da sapata em centímetros">
                     </div>
                     <div class="operator-sign">X</div>
-                    <div class="calc-field" style="width: 130px;">
+                    <div class="calc-field w-field-130">
                         <label>Altura em CM</label>
-                        <input type="number" step="0.1" class="calc-input sapata-alt" placeholder="0">
+                        <input type="number" step="0.1" class="calc-input sapata-alt" placeholder="0" title="Altura da sapata em centímetros">
                     </div>
                     <div class="operator-sign">=</div>
-                    <div class="calc-field" style="width: 130px; margin-left: auto;">
+                    <div class="calc-field w-field-result">
                         <label>Result. M³</label>
-                        <input type="text" class="sapata-m3" readonly value="0.00">
+                        <input type="text" class="sapata-m3" readonly value="0.00" title="Volume da sapata em m³" placeholder="0.00">
                     </div>
                 </div>
             </div>
@@ -672,33 +693,33 @@
             <div class="calc-section-title">Broca</div>
             <div id="brocaRowsContainer">
                 <div class="calc-row broca-row">
-                    <div class="calc-field" style="width: 100px;">
+                    <div class="calc-field w-field-100">
                         <label>Quantidade</label>
-                        <input type="number" step="1" class="calc-input broca-qtd" placeholder="1" value="1">
+                        <input type="number" step="1" class="calc-input broca-qtd" placeholder="1" value="1" title="Quantidade de brocas">
                     </div>
-                    <div class="calc-field" style="width: 140px;">
+                    <div class="calc-field w-field-140">
                         <label>(3.1416 X r²) x Altura</label>
-                        <input type="text" readonly value="Fórmula Circular" style="font-size: 11px;">
+                        <input type="text" readonly value="Fórmula Circular" class="field-formula" title="Fórmula geométrica circular para broca" placeholder="Fórmula">
                     </div>
-                    <div class="calc-field" style="width: 80px;">
+                    <div class="calc-field w-field-80">
                         <label>PI</label>
-                        <input type="text" readonly value="3.1416">
+                        <input type="text" readonly value="3.1416" title="Constante Pi (3.1416)" placeholder="3.1416">
                     </div>
-                    <div class="calc-field" style="width: 120px;">
+                    <div class="calc-field w-field-120">
                         <label>Diâmetro CM</label>
-                        <input type="number" step="0.1" class="calc-input broca-diam" placeholder="0">
+                        <input type="number" step="0.1" class="calc-input broca-diam" placeholder="0" title="Diâmetro da broca em centímetros">
                     </div>
-                    <div class="calc-field" style="width: 80px;">
+                    <div class="calc-field w-field-80">
                         <label>Dividido por</label>
-                        <input type="text" readonly value="4">
+                        <input type="text" readonly value="4" title="Divisor da fórmula da área circular (4)" placeholder="4">
                     </div>
-                    <div class="calc-field" style="width: 130px;">
+                    <div class="calc-field w-field-130">
                         <label>Altura em metros</label>
-                        <input type="number" step="0.01" class="calc-input broca-alt" placeholder="0.00">
+                        <input type="number" step="0.01" class="calc-input broca-alt" placeholder="0.00" title="Profundidade ou altura da broca em metros">
                     </div>
-                    <div class="calc-field" style="width: 130px; margin-left: auto;">
+                    <div class="calc-field w-field-result">
                         <label>Result. M³</label>
-                        <input type="text" class="broca-m3" readonly value="0.00">
+                        <input type="text" class="broca-m3" readonly value="0.00" title="Volume da broca em m³" placeholder="0.00">
                     </div>
                 </div>
             </div>
@@ -712,24 +733,24 @@
             <div class="calc-section-title">Resultado Total</div>
             <div class="total-boxes-row">
                 <div class="total-box">
-                    <label>Laje</label>
-                    <input type="text" id="totalBoxLaje" readonly value="0.00 m³">
+                    <label for="totalBoxLaje">Laje</label>
+                    <input type="text" id="totalBoxLaje" readonly value="0.00 m³" title="Volume total de laje em m³" placeholder="0.00 m³">
                 </div>
                 <div class="total-box">
-                    <label>Viga Baldrame</label>
-                    <input type="text" id="totalBoxViga" readonly value="0.00 m³">
+                    <label for="totalBoxViga">Viga Baldrame</label>
+                    <input type="text" id="totalBoxViga" readonly value="0.00 m³" title="Volume total de viga baldrame em m³" placeholder="0.00 m³">
                 </div>
                 <div class="total-box">
-                    <label>Sapata</label>
-                    <input type="text" id="totalBoxSapata" readonly value="0.00 m³">
+                    <label for="totalBoxSapata">Sapata</label>
+                    <input type="text" id="totalBoxSapata" readonly value="0.00 m³" title="Volume total de sapata em m³" placeholder="0.00 m³">
                 </div>
                 <div class="total-box">
-                    <label>Broca</label>
-                    <input type="text" id="totalBoxBroca" readonly value="0.00 m³">
+                    <label for="totalBoxBroca">Broca</label>
+                    <input type="text" id="totalBoxBroca" readonly value="0.00 m³" title="Volume total de broca em m³" placeholder="0.00 m³">
                 </div>
                 <div class="total-box highlight">
-                    <label>Resultado total M³</label>
-                    <input type="text" id="totalBoxGeral" readonly value="0.00 m³">
+                    <label for="totalBoxGeral">Resultado total M³</label>
+                    <input type="text" id="totalBoxGeral" readonly value="0.00 m³" title="Volume geral total somado em m³" placeholder="0.00 m³">
                 </div>
             </div>
 
@@ -742,7 +763,7 @@
             <div class="commercial-metric-card" id="commercialCard">
                 <div class="metric-details">
                     <span class="metric-badge">Métrica Comercial Inteligente Cortesia</span>
-                    <h3 class="metric-title">Estimativa Base do Orçamento</h3>
+                    <h2 class="metric-title">Estimativa Base do Orçamento</h2>
                     <p class="metric-desc">
                         Cálculo baseado no volume exato com margem técnica de segurança (5%). Inclui concreto usinado FCK 25/30 + suporte logístico de central.
                     </p>
@@ -755,7 +776,7 @@
             </div>
 
             <!-- Botão de Ação: Concluir Cálculo e Enviar via WhatsApp -->
-            <div style="overflow: hidden; margin-top: 10px;">
+            <div class="actions-bar">
                 <button type="button" class="btn-calc-submit" id="btnFinalizarCalculo">
                     <i class="fa fa-calculator"></i> Calcular e Enviar Proposta
                 </button>
@@ -781,8 +802,8 @@
     </div>
 
     <!-- Floating WhatsApp Help Button -->
-    <a href="https://api.whatsapp.com/send?phone=551129163000" id="btnFloatWa" class="floating-wa-help" target="_blank" rel="noopener">
-        <i class="fa fa-whatsapp" style="font-size: 18px;"></i>
+    <a href="https://api.whatsapp.com/send?phone=551129163000" id="btnFloatWa" class="floating-wa-help" target="_blank" rel="noopener" title="Atendimento Técnico WhatsApp">
+        <i class="fa fa-whatsapp wa-icon"></i>
         <span>Atendimento Técnico WhatsApp</span>
     </a>
 
@@ -935,23 +956,23 @@
                 const row = document.createElement('div');
                 row.className = 'calc-row viga-row';
                 row.innerHTML = `
-                    <div class="calc-field" style="width: 110px;">
-                        <input type="number" step="1" class="calc-input viga-qtd" placeholder="1" value="1">
+                    <div class="calc-field w-field-110">
+                        <input type="number" step="1" class="calc-input viga-qtd" placeholder="1" value="1" title="Quantidade de vigas">
                     </div>
-                    <div class="calc-field" style="width: 130px;">
-                        <input type="number" step="0.01" class="calc-input viga-comp" placeholder="0.00">
-                    </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field" style="width: 130px;">
-                        <input type="number" step="0.1" class="calc-input viga-larg" placeholder="0">
+                    <div class="calc-field w-field-130">
+                        <input type="number" step="0.01" class="calc-input viga-comp" placeholder="0.00" title="Comprimento em metros">
                     </div>
                     <div class="operator-sign">X</div>
-                    <div class="calc-field" style="width: 130px;">
-                        <input type="number" step="0.1" class="calc-input viga-alt" placeholder="0">
+                    <div class="calc-field w-field-130">
+                        <input type="number" step="0.1" class="calc-input viga-larg" placeholder="0" title="Largura em centímetros">
+                    </div>
+                    <div class="operator-sign">X</div>
+                    <div class="calc-field w-field-130">
+                        <input type="number" step="0.1" class="calc-input viga-alt" placeholder="0" title="Altura em centímetros">
                     </div>
                     <div class="operator-sign">=</div>
-                    <div class="calc-field" style="width: 130px; margin-left: auto;">
-                        <input type="text" class="viga-m3" readonly value="0.00">
+                    <div class="calc-field w-field-result">
+                        <input type="text" class="viga-m3" readonly value="0.00" placeholder="0.00" title="Volume da viga em m³">
                     </div>
                 `;
                 container.appendChild(row);
@@ -963,23 +984,23 @@
                 const row = document.createElement('div');
                 row.className = 'calc-row sapata-row';
                 row.innerHTML = `
-                    <div class="calc-field" style="width: 110px;">
-                        <input type="number" step="1" class="calc-input sapata-qtd" placeholder="1" value="1">
+                    <div class="calc-field w-field-110">
+                        <input type="number" step="1" class="calc-input sapata-qtd" placeholder="1" value="1" title="Quantidade de sapatas">
                     </div>
-                    <div class="calc-field" style="width: 130px;">
-                        <input type="number" step="0.01" class="calc-input sapata-comp" placeholder="0.00">
-                    </div>
-                    <div class="operator-sign">X</div>
-                    <div class="calc-field" style="width: 130px;">
-                        <input type="number" step="0.1" class="calc-input sapata-larg" placeholder="0">
+                    <div class="calc-field w-field-130">
+                        <input type="number" step="0.01" class="calc-input sapata-comp" placeholder="0.00" title="Comprimento em metros">
                     </div>
                     <div class="operator-sign">X</div>
-                    <div class="calc-field" style="width: 130px;">
-                        <input type="number" step="0.1" class="calc-input sapata-alt" placeholder="0">
+                    <div class="calc-field w-field-130">
+                        <input type="number" step="0.1" class="calc-input sapata-larg" placeholder="0" title="Largura em centímetros">
+                    </div>
+                    <div class="operator-sign">X</div>
+                    <div class="calc-field w-field-130">
+                        <input type="number" step="0.1" class="calc-input sapata-alt" placeholder="0" title="Altura em centímetros">
                     </div>
                     <div class="operator-sign">=</div>
-                    <div class="calc-field" style="width: 130px; margin-left: auto;">
-                        <input type="text" class="sapata-m3" readonly value="0.00">
+                    <div class="calc-field w-field-result">
+                        <input type="text" class="sapata-m3" readonly value="0.00" placeholder="0.00" title="Volume da sapata em m³">
                     </div>
                 `;
                 container.appendChild(row);
@@ -991,26 +1012,26 @@
                 const row = document.createElement('div');
                 row.className = 'calc-row broca-row';
                 row.innerHTML = `
-                    <div class="calc-field" style="width: 100px;">
-                        <input type="number" step="1" class="calc-input broca-qtd" placeholder="1" value="1">
+                    <div class="calc-field w-field-100">
+                        <input type="number" step="1" class="calc-input broca-qtd" placeholder="1" value="1" title="Quantidade de brocas">
                     </div>
-                    <div class="calc-field" style="width: 140px;">
-                        <input type="text" readonly value="Fórmula Circular" style="font-size: 11px;">
+                    <div class="calc-field w-field-140">
+                        <input type="text" readonly value="Fórmula Circular" class="field-formula" placeholder="Fórmula" title="Fórmula geométrica circular">
                     </div>
-                    <div class="calc-field" style="width: 80px;">
-                        <input type="text" readonly value="3.1416">
+                    <div class="calc-field w-field-80">
+                        <input type="text" readonly value="3.1416" placeholder="3.1416" title="Constante Pi">
                     </div>
-                    <div class="calc-field" style="width: 120px;">
-                        <input type="number" step="0.1" class="calc-input broca-diam" placeholder="0">
+                    <div class="calc-field w-field-120">
+                        <input type="number" step="0.1" class="calc-input broca-diam" placeholder="0" title="Diâmetro em centímetros">
                     </div>
-                    <div class="calc-field" style="width: 80px;">
-                        <input type="text" readonly value="4">
+                    <div class="calc-field w-field-80">
+                        <input type="text" readonly value="4" placeholder="4" title="Divisor da fórmula">
                     </div>
-                    <div class="calc-field" style="width: 130px;">
-                        <input type="number" step="0.01" class="calc-input broca-alt" placeholder="0.00">
+                    <div class="calc-field w-field-130">
+                        <input type="number" step="0.01" class="calc-input broca-alt" placeholder="0.00" title="Altura em metros">
                     </div>
-                    <div class="calc-field" style="width: 130px; margin-left: auto;">
-                        <input type="text" class="broca-m3" readonly value="0.00">
+                    <div class="calc-field w-field-result">
+                        <input type="text" class="broca-m3" readonly value="0.00" placeholder="0.00" title="Volume da broca em m³">
                     </div>
                 `;
                 container.appendChild(row);
