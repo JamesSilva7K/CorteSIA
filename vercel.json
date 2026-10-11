@@ -3,34 +3,22 @@
   "builds": [
     {
       "src": "server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": [
+          "css/**",
+          "js/**",
+          "images/**",
+          "fonts/**",
+          "index.html",
+          "calculadora.html",
+          "config.json",
+          "metrics.json"
+        ]
+      }
     }
   ],
   "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/images/(.*)",
-      "dest": "/images/$1"
-    },
-    {
-      "src": "/css/(.*)",
-      "dest": "/css/$1"
-    },
-    {
-      "src": "/js/(.*)",
-      "dest": "/js/$1"
-    },
-    {
-      "src": "/fonts/(.*)",
-      "dest": "/fonts/$1"
-    },
-    {
-      "src": "/favicon.png",
-      "dest": "/favicon.png"
-    },
     {
       "src": "/(.*)",
       "dest": "/server.js"

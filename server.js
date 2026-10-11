@@ -51,7 +51,11 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(express.static('.'));
+app.use(express.static(path.join(__dirname)));
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/fonts', express.static(path.join(__dirname, 'fonts')));
 
 const CONFIG_FILE = './config.json';
 const METRICS_FILE = './metrics.json';
