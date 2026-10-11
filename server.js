@@ -71,7 +71,9 @@ function readConfig() {
   const defaults = {
     whatsapp: "551129163000",
     domain: "www.cortesiaconcreto.com.br",
-    email: "VENDAS@CORTESIACONCRETO.COM.BR"
+    email: "VENDAS@CORTESIACONCRETO.COM.BR",
+    concretoM3Price: 385.00,
+    bombeamentoBasePrice: 650.00
   };
   if (fs.existsSync(CONFIG_FILE)) {
     try {
@@ -231,12 +233,15 @@ if (botToken) {
         `📱 *Telefone 1 (Principal):* \`${tel1}\`\n` +
         `📱 *Telefone 2 (Secundário):* \`${tel2}\`\n` +
         `✉️ *E-mail Oficial:* \`${config.email}\`\n\n` +
+        `💰 *Métricas de Orçamento Calculadora:*\n` +
+        ` • Preço Médio Concreto: \`R$ ${Number(config.concretoM3Price || 385).toFixed(2)} / m³\`\n` +
+        ` • Taxa Base Bombeamento: \`R$ ${Number(config.bombeamentoBasePrice || 650).toFixed(2)}\`\n\n` +
         `🖼️ *Pop-up de Entrada:* Imagem Gerada Ativa no Site`,
       markup: Markup.inlineKeyboard([
         [Markup.button.callback('🖼️ Gerar / Atualizar Imagem Pop-up', 'action_generate_banner')],
         [Markup.button.callback('🌐 Alterar Domínio', 'action_edit_domain'), Markup.button.callback('✉️ Alterar E-mail', 'action_edit_email')],
         [Markup.button.callback('📱 Alterar Telefone 1', 'action_edit_whatsapp'), Markup.button.callback('📱 Configurar Telefone 2', 'action_edit_whatsapp2')],
-        [Markup.button.callback('📈 Relatórios de Leads', 'action_reports')]
+        [Markup.button.callback('💰 Ajustar Preço Base m³', 'action_edit_price'), Markup.button.callback('📈 Relatórios de Leads', 'action_reports')]
       ])
     };
   };
@@ -406,6 +411,12 @@ if (botToken) {
     ctx.answerCbQuery();
   });
 
+  bot.action('action_edit_price', (ctx) => {
+    state[ctx.from.id] = 'awaiting_price';
+    ctx.reply('Envie o novo valor médio do m³ do Concreto em Reais (Ex: `390` ou `385.50`):', { parse_mode: 'Markdown' });
+    ctx.answerCbQuery();
+  });
+
   bot.on('text', async (ctx) => {
     const userState = state[ctx.from.id];
     const text = ctx.message.text.trim();
@@ -485,6 +496,17 @@ if (botToken) {
       } else {
         ctx.reply('❌ Formato de e-mail inválido. Tente novamente.');
       }
+    } else if (userState === 'awaiting_price') {
+      const cleanVal = parseFloat(text.replace(',', '.').replace(/[^\d.]/g, ''));
+      if (!isNaN(cleanVal) && cleanVal > 0) {
+        const config = readConfig();
+        config.concretoM3Price = cleanVal;
+        writeConfig(config);
+        state[ctx.from.id] = null;
+        await ctx.reply(`✅ *Preço Base do Concreto atualizado!*\nNovo valor: \`R$ ${cleanVal.toFixed(2)} / m³\`\nA calculadora de consulta usará este valor como referência inteligente.`, { parse_mode: 'Markdown' });
+      } else {
+        ctx.reply('❌ Valor inválido. Envie um número positivo (Ex: `385.00` ou `390`).');
+      }
     }
   });
 
@@ -515,7 +537,7 @@ if (botToken) {
     }
 
     // Grava ação real nas métricas e no histórico estruturado
-    if (['enter', 'leave', 'whatsapp', 'form', 'invalid_lead'].includes(action)) {
+    if (['enter', 'leave', 'whatsapp', 'form', 'calculadora', 'invalid_lead'].includes(action)) {
       recordLeadAction(action, details, metadata);
     }
 
@@ -559,6 +581,27 @@ if (botToken) {
           `⚡ *Ação:* Entrar em contato imediatamente.`;
         break;
 
+      case 'calculadora':
+        const calcClient = (metadata && metadata.cliente) ? metadata.cliente : 'Cliente Não Informado';
+        const calcResp = (metadata && metadata.responsavel) ? metadata.responsavel : 'Não informado';
+        const calcEmail = (metadata && metadata.email) ? metadata.email : 'Não informado';
+        const calcTotalM3 = (metadata && metadata.totalM3) ? metadata.totalM3 : '0.00';
+        const calcPrecoBase = (metadata && metadata.estimativaBase) ? metadata.estimativaBase : 'A calcular';
+        const calcDetalhes = (metadata && metadata.detalhes) ? metadata.detalhes : '';
+
+        message = `🧮 *CONSULTA AVANÇADA / CÁLCULO DE CONCRETO*\n` +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📅 *Horário:* ${nowBR}\n` +
+          `👤 *Cliente:* ${calcClient}\n` +
+          `👷 *Responsável:* ${calcResp}\n` +
+          `✉️ *E-mail:* ${calcEmail}\n\n` +
+          `📐 *Volume Total Calculado:* *${calcTotalM3} m³*\n` +
+          `💰 *Estimativa Base Sugerida:* *${calcPrecoBase}*\n` +
+          (calcDetalhes ? `\n📊 *Detalhamento Estrutural:*\n${calcDetalhes}\n` : '') +
+          `━━━━━━━━━━━━━━━━━━━━\n` +
+          `📲 *O cliente foi redirecionado ao WhatsApp com o memorial de cálculo completo!*`;
+        break;
+
       case 'invalid_lead':
         // Apenas registra métrica silenciosa contra bots sem spammar o admin
         return res.json({ success: true, blocked: true });
@@ -578,6 +621,11 @@ if (botToken) {
 } else {
   console.warn('BOT_TOKEN not provided in .env.');
 }
+
+// Rota dedicada para Tabela de Cálculo e Consulta Avançada
+app.get(['/calculadora', '/calculadora.html', '/tabeladecalculo', '/tabeladecalculo/'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'calculadora.html'));
+});
 
 // Redirecionamento de Fallback Inteligente para WhatsApp em páginas ou arquivos ausentes (.html, .php, .pdf)
 app.use((req, res, next) => {

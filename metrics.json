@@ -1,7 +1,28 @@
 {
   "enter": 8,
   "leave": 7,
-  "whatsapp": 5,
+  "whatsapp": 6,
   "form": 0,
-  "invalid_lead": 0
+  "invalid_lead": 0,
+  "daily": {
+    "2026-10-11": {
+      "enter": 0,
+      "leave": 0,
+      "whatsapp": 1,
+      "form": 0,
+      "invalid_lead": 0
+    }
+  },
+  "recentLeads": [
+    {
+      "id": "mv4959aw811",
+      "timestamp": "2026-10-11T20:04:49.112Z",
+      "action": "whatsapp",
+      "details": "Clique em Simulação de Concreto",
+      "context": "Concreto Usinado Central",
+      "buttonText": "Orçamento Rápido",
+      "originalLink": "",
+      "generatedMessage": "Olá! Gostaria de cotar concreto usinado para minha obra."
+    }
+  ]
 }

@@ -369,6 +369,7 @@
                 const targetElement = document.querySelector(rawHref);
                 if (targetElement) return; // Permite rolagem interna suave
             }
+            if (rawHref.includes('calculadora') || rawHref.includes('tabeladecalculo')) return;
             if (isInNav && (rawHref === 'index.html' || rawHref === './' || rawHref === '/')) return;
 
             const parentCard = el.closest('.blog-post') || el.closest('.project-item') || el.closest('.block-content') || el.closest('.col-sm-6') || el.closest('.col-sm-4') || el.closest('.col-sm-12');

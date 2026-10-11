@@ -36,8 +36,16 @@
       "dest": "/index.html"
     },
     {
-      "src": "/index.html",
-      "dest": "/index.html"
+      "src": "/calculadora",
+      "dest": "/calculadora.html"
+    },
+    {
+      "src": "/tabeladecalculo",
+      "dest": "/calculadora.html"
+    },
+    {
+      "src": "/calculadora.html",
+      "dest": "/calculadora.html"
     },
     {
       "src": "/(.*)",
