@@ -622,6 +622,11 @@ if (botToken) {
   console.warn('BOT_TOKEN not provided in .env.');
 }
 
+// Rota raiz oficial
+app.get(['/', '/index.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Rota dedicada para Tabela de Cálculo e Consulta Avançada
 app.get(['/calculadora', '/calculadora.html', '/tabeladecalculo', '/tabeladecalculo/'], (req, res) => {
   res.sendFile(path.join(__dirname, 'calculadora.html'));

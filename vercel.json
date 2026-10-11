@@ -32,22 +32,6 @@
       "dest": "/favicon.png"
     },
     {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/calculadora",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/tabeladecalculo",
-      "dest": "/server.js"
-    },
-    {
-      "src": "/calculadora.html",
-      "dest": "/server.js"
-    },
-    {
       "src": "/(.*)",
       "dest": "/server.js"
     }
