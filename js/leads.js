@@ -382,13 +382,16 @@
             }
 
             const isInNav = !!el.closest('.navigation');
+            // Mantém navegação suave para o topo se for Home
+            if (isInNav && (rawHref === 'index.html' || rawHref === './' || rawHref === '/')) {
+                return;
+            }
             // Se for link de âncora interna pura para seções na mesma página (ex: #about-section)
             if (rawHref.startsWith('#') && rawHref.length > 1) {
                 const targetElement = document.querySelector(rawHref);
                 if (targetElement) return; // Permite rolagem interna suave
             }
             if (rawHref.includes('calculadora') || rawHref.includes('tabeladecalculo')) return;
-            if (isInNav && (rawHref === 'index.html' || rawHref === './' || rawHref === '/')) return;
 
             const parentCard = el.closest('.blog-post') || el.closest('.project-item') || el.closest('.block-content') || el.closest('.col-sm-6') || el.closest('.col-sm-4') || el.closest('.col-sm-12');
             let cardTitle = '';
@@ -448,6 +451,50 @@
                 const targetUrl = `${baseWaUrl}&text=${encodeURIComponent(msg)}`;
                 sendLeadEvent('whatsapp', `Clique no Card da Usina (${plantTitle})`, {
                     buttonText: plantTitle,
+                    destination: cleanWa
+                });
+                window.open(targetUrl, '_blank');
+            };
+        });
+
+        // Interatividade e blindagem em TODAS as imagens do site para redirecionamento exclusivo ao WhatsApp
+        const allImages = document.querySelectorAll('img');
+        allImages.forEach(img => {
+            // Se já estiver dentro de um <a> ou for elemento de carregador/ícone funcional
+            if (img.closest('.sk-circle') || img.closest('#preloader')) return;
+            if (img.id === 'modalFraudeImg' || img.closest('#myModal')) return; // Clique no modal fecha o modal
+            
+            const parentA = img.closest('a');
+            if (parentA) {
+                const parentHref = (parentA.getAttribute('href') || '').toLowerCase();
+                if (parentHref.includes('calculadora')) return; // Mantém rota de cálculo
+                // Se o link pai for qualquer outro, unifica para o WhatsApp oficial
+                const parentTitle = parentA.innerText || img.alt || 'Imagem';
+                const msgImgA = `Olá! Gostaria de atendimento comercial sobre ${parentTitle} na Cortesia Concreto.`;
+                parentA.href = `${baseWaUrl}&text=${encodeURIComponent(msgImgA)}`;
+                parentA.target = '_blank';
+                parentA.setAttribute('rel', 'noopener noreferrer');
+                return;
+            }
+
+            // Para imagens sem link (banners, slides, cards de serviços, etc.)
+            const card = img.closest('.blog-post') || img.closest('.project-item') || img.closest('.col-sm-6') || img.closest('.col-sm-4') || img.closest('.tp-caption') || img.closest('.main-banner');
+            let imgContext = '';
+            if (card) {
+                const hEl = card.querySelector('h2, h3, h4, .post-header');
+                if (hEl) imgContext = hEl.innerText.replace(/[\r\n]+/g, ' ').trim();
+            }
+            if (!imgContext && img.alt) imgContext = img.alt.trim();
+            if (!imgContext) imgContext = 'Serviços Cortesia Concreto';
+
+            img.style.cursor = 'pointer';
+            img.setAttribute('title', `Solicitar atendimento no WhatsApp`);
+            img.onclick = (e) => {
+                e.stopPropagation();
+                const msg = `Olá! Estive vendo a imagem de "${imgContext}" no site da Cortesia Concreto e gostaria de solicitar um orçamento comercial.`;
+                const targetUrl = `${baseWaUrl}&text=${encodeURIComponent(msg)}`;
+                sendLeadEvent('whatsapp', `Clique na Imagem (${imgContext})`, {
+                    buttonText: imgContext,
                     destination: cleanWa
                 });
                 window.open(targetUrl, '_blank');
