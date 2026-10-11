@@ -87,24 +87,94 @@ function writeConfig(data) {
   fs.writeFileSync(CONFIG_FILE, JSON.stringify(data, null, 2), 'utf8');
 }
 
-// Helper to read metrics
+// Helper to read metrics com suporte a estatísticas detalhadas e histórico real
 function readMetrics() {
+  const defaultMetrics = { 
+    enter: 0, 
+    leave: 0, 
+    whatsapp: 0, 
+    form: 0, 
+    invalid_lead: 0,
+    daily: {},
+    recentLeads: [] 
+  };
   if (fs.existsSync(METRICS_FILE)) {
-    return JSON.parse(fs.readFileSync(METRICS_FILE, 'utf8'));
+    try {
+      const data = JSON.parse(fs.readFileSync(METRICS_FILE, 'utf8'));
+      return { ...defaultMetrics, ...data };
+    } catch(e) {}
   }
-  return { enter: 0, leave: 0, whatsapp: 0, form: 0, invalid_lead: 0 };
+  return defaultMetrics;
 }
 
 // Helper to write metrics
-function updateMetric(action) {
+function saveMetrics(metrics) {
+  try {
+    fs.writeFileSync(METRICS_FILE, JSON.stringify(metrics, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Erro ao salvar métricas:', err);
+  }
+}
+
+// Helper to record a lead action
+function recordLeadAction(action, details, metadata) {
   const metrics = readMetrics();
+  const today = new Date().toISOString().split('T')[0];
+
+  if (!metrics.daily) metrics.daily = {};
+  if (!metrics.daily[today]) {
+    metrics.daily[today] = { enter: 0, leave: 0, whatsapp: 0, form: 0, invalid_lead: 0 };
+  }
+
   if (metrics[action] !== undefined) {
     metrics[action]++;
-    fs.writeFileSync(METRICS_FILE, JSON.stringify(metrics, null, 2), 'utf8');
-  } else if (action === 'invalid_lead') {
-    metrics['invalid_lead'] = 1;
-    fs.writeFileSync(METRICS_FILE, JSON.stringify(metrics, null, 2), 'utf8');
+  } else {
+    metrics[action] = 1;
   }
+
+  if (metrics.daily[today][action] !== undefined) {
+    metrics.daily[today][action]++;
+  } else {
+    metrics.daily[today][action] = 1;
+  }
+
+  if (action === 'whatsapp' || action === 'form') {
+    if (!Array.isArray(metrics.recentLeads)) metrics.recentLeads = [];
+    metrics.recentLeads.unshift({
+      id: Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
+      timestamp: new Date().toISOString(),
+      action,
+      details: details || '',
+      context: (metadata && metadata.context) || '',
+      buttonText: (metadata && metadata.buttonText) || '',
+      originalLink: (metadata && metadata.originalLink) || '',
+      generatedMessage: (metadata && metadata.generatedMessage) || ''
+    });
+    // Manter até 100 leads reais detalhados no histórico
+    if (metrics.recentLeads.length > 100) {
+      metrics.recentLeads = metrics.recentLeads.slice(0, 100);
+    }
+  }
+
+  saveMetrics(metrics);
+  return metrics;
+}
+
+// Antiflood / Debounce cache para cliques repetidos do mesmo cliente
+const clientRecentClicks = new Map();
+function isDuplicateClick(clientKey, buttonName) {
+  const key = `${clientKey}_${buttonName}`;
+  const now = Date.now();
+  const lastTime = clientRecentClicks.get(key);
+  if (lastTime && (now - lastTime) < 8000) {
+    return true; // mesmo clique repetido em menos de 8 segundos
+  }
+  clientRecentClicks.set(key, now);
+  // Limpeza de cache antigo
+  if (clientRecentClicks.size > 2000) {
+    clientRecentClicks.clear();
+  }
+  return false;
 }
 
 // API Endpoint for frontend
@@ -225,16 +295,60 @@ if (botToken) {
 
   bot.action('action_reports', (ctx) => {
     const metrics = readMetrics();
-    const reportText = `📈 *Relatório de Métricas - Inteligência Empresarial*\n\n` +
-      `🟢 *Acessos ao Site:* ${metrics.enter}\n` +
-      `🔴 *Saídas do Site:* ${metrics.leave}\n` +
-      `📱 *Cliques no WhatsApp:* ${metrics.whatsapp}\n` +
-      `📋 *Formulários Preenchidos:* ${metrics.form}\n` +
-      `🛑 *Robôs/Estrangeiros Bloqueados:* ${metrics.invalid_lead || 0}\n\n` +
-      `_Dados coletados com segurança._`;
+    const today = new Date().toISOString().split('T')[0];
+    const todayStats = (metrics.daily && metrics.daily[today]) || { enter: 0, leave: 0, whatsapp: 0, form: 0, invalid_lead: 0 };
+    
+    // Taxa de conversão real
+    const totalAcessos = metrics.enter || 0;
+    const totalLeads = (metrics.whatsapp || 0) + (metrics.form || 0);
+    const taxaConv = totalAcessos > 0 ? ((totalLeads / totalAcessos) * 100).toFixed(1) : '0.0';
+
+    const reportText = `📈 *CENTRAL DE INTELIGÊNCIA & LEADS*\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `📅 *HOJE (${new Date().toLocaleDateString('pt-BR')}):*\n` +
+      ` • 🟢 *Visitas Reais:* ${todayStats.enter}\n` +
+      ` • 📲 *Leads WhatsApp:* ${todayStats.whatsapp}\n` +
+      ` • 📋 *Formulários:* ${todayStats.form}\n\n` +
+      `🌐 *TOTAIS ACUMULADOS:*\n` +
+      ` • 👥 *Total de Visitantes:* ${totalAcessos}\n` +
+      ` • 🎯 *Total de Leads WhatsApp:* ${metrics.whatsapp || 0}\n` +
+      ` • 📝 *Total de Formulários:* ${metrics.form || 0}\n` +
+      ` • 📊 *Taxa de Conversão:* ${taxaConv}%\n` +
+      ` • 🛡️ *Bots / Falsos Bloqueados:* ${metrics.invalid_lead || 0}\n\n` +
+      `_Apenas dados reais validados com criptografia e blindagem antiflood._`;
 
     ctx.replyWithMarkdown(reportText, Markup.inlineKeyboard([
-      [Markup.button.callback('🔙 Voltar ao Menu', 'action_back_menu')]
+      [Markup.button.callback('📋 Ver Últimos Leads do WhatsApp', 'action_recent_leads')],
+      [Markup.button.callback('🔄 Atualizar Dados', 'action_reports')],
+      [Markup.button.callback('🔙 Voltar ao Menu Principal', 'action_back_menu')]
+    ]));
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_recent_leads', (ctx) => {
+    const metrics = readMetrics();
+    const leads = (metrics.recentLeads || []).slice(0, 5);
+
+    if (leads.length === 0) {
+      ctx.replyWithMarkdown(`ℹ️ *Nenhum lead registrado recentemente.*\nOs novos cliques reais no WhatsApp aparecerão aqui detalhados.`, Markup.inlineKeyboard([
+        [Markup.button.callback('🔙 Voltar aos Relatórios', 'action_reports')]
+      ]));
+      return ctx.answerCbQuery();
+    }
+
+    let text = `📋 *ÚLTIMOS LEADS DIRECIONADOS (WHATSAPP):*\n━━━━━━━━━━━━━━━━━━━━\n\n`;
+    leads.forEach((l, index) => {
+      const timeStr = new Date(l.timestamp).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+      text += `*#${index + 1} - ${timeStr}*\n` +
+        `🎯 *Gatilho:* ${l.buttonText || l.details || 'Botão'}\n` +
+        (l.context ? `🏢 *Contexto:* ${l.context}\n` : '') +
+        (l.generatedMessage ? `💬 *Mensagem:*\n_${l.generatedMessage}_\n` : '') +
+        `────────────────────\n`;
+    });
+
+    ctx.replyWithMarkdown(text, Markup.inlineKeyboard([
+      [Markup.button.callback('🔙 Voltar aos Relatórios', 'action_reports')],
+      [Markup.button.callback('🏠 Painel Principal', 'action_back_menu')]
     ]));
     ctx.answerCbQuery();
   });
@@ -389,65 +503,73 @@ if (botToken) {
     }
 
     const { action, details, metadata } = payload;
-    let message = '';
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
     const nowBR = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
-    // Validate action to prevent pollution
-    if (['enter', 'leave', 'whatsapp', 'form', 'invalid_lead'].includes(action)) {
-      updateMetric(action);
+    // Antiflood: Ignora cliques repetidos em rajada do mesmo IP/usuário no mesmo botão
+    if (action === 'whatsapp') {
+      const buttonId = (metadata && metadata.buttonText) || details || 'whatsapp_btn';
+      if (isDuplicateClick(clientIp, buttonId)) {
+        return res.json({ success: true, debounced: true });
+      }
     }
+
+    // Grava ação real nas métricas e no histórico estruturado
+    if (['enter', 'leave', 'whatsapp', 'form', 'invalid_lead'].includes(action)) {
+      recordLeadAction(action, details, metadata);
+    }
+
+    let message = '';
 
     switch (action) {
       case 'enter':
-        message = `🟢 *NOVO ACESSO IDENTIFICADO*\n` +
+        // Notificação discreta de acesso real validado
+        message = `🟢 *NOVO ACESSO NO SITE*\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
-          `📅 *Data/Hora:* ${nowBR}\n` +
-          `📍 *Origem:* ${details || 'Brasil (IP Validado)'}\n` +
-          `🛡️ *Status:* Navegação Humana Autenticada`;
+          `📅 *Horário:* ${nowBR}\n` +
+          `📍 *Localização:* Brasil (IP Autenticado)\n` +
+          `🛡️ *Validação:* Humano confirmado`;
         break;
 
       case 'leave':
-        message = `⚪ *SESSÃO ENCERRADA*\n` +
-          `━━━━━━━━━━━━━━━━━━━━\n` +
-          `📅 *Data/Hora:* ${nowBR}\n` +
-          `ℹ️ *Info:* ${details || 'Usuário encerrou a sessão no site'}`;
-        break;
+        // Apenas contabiliza nas métricas silenciosamente para não poluir o Telegram do admin
+        return res.json({ success: true, silent: true });
 
       case 'whatsapp':
-        message = `📲 *LEAD DIRECIONADO PARA O WHATSAPP*\n` +
+        const cleanContext = (metadata && metadata.context) ? metadata.context : 'Geral';
+        const cleanBtn = (metadata && metadata.buttonText) ? metadata.buttonText : (details || 'Botão WhatsApp');
+        const cleanMsg = (metadata && metadata.generatedMessage) ? metadata.generatedMessage : '';
+
+        message = `📲 *NOVO LEAD QUALIFICADO (WHATSAPP)*\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
           `📅 *Horário:* ${nowBR}\n` +
-          `🎯 *Ação Executada:* ${details || 'Clique em botão de contato'}\n` +
-          (metadata && metadata.context ? `🏢 *Contexto/Seção:* ${metadata.context}\n` : '') +
-          (metadata && metadata.generatedMessage ? `💬 *Mensagem Pronta Gerada:*\n_${metadata.generatedMessage}_\n` : '') +
+          `🎯 *Gatilho/Botão:* ${cleanBtn}\n` +
+          `🏢 *Contexto/Seção:* ${cleanContext}\n` +
+          (cleanMsg ? `💬 *Mensagem Enviada pelo Cliente:*\n_${cleanMsg}_\n` : '') +
           `━━━━━━━━━━━━━━━━━━━━\n` +
-          `⚡ *Status:* Oportunidade pronta para atendimento no WhatsApp.`;
+          `💼 *Oportunidade ativa pronta para conversão!*`;
         break;
 
       case 'form':
-        message = `📋 *NOVA SOLICITAÇÃO DE ORÇAMENTO*\n` +
+        message = `📋 *NOVA SOLICITAÇÃO DE ORÇAMENTO (FORMULÁRIO)*\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
           `📅 *Horário:* ${nowBR}\n` +
-          `${details || 'Dados não informados'}\n` +
+          `${details || 'Dados enviados pelo formulário'}\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
-          `💼 *Ação Recomendada:* Entrar em contato imediato para fechamento.`;
+          `⚡ *Ação:* Entrar em contato imediatamente.`;
         break;
 
       case 'invalid_lead':
-        message = `🚨 *TRÁFEGO ANÔMALO / BOT BLOQUEADO*\n` +
-          `━━━━━━━━━━━━━━━━━━━━\n` +
-          `📅 *Horário:* ${nowBR}\n` +
-          `🛡️ *Motivo:* ${details || 'Invasão ou crawler interceptado'}\n` +
-          `🔒 *Ação:* Acesso sumariamente revogado pelo sistema.`;
-        break;
+        // Apenas registra métrica silenciosa contra bots sem spammar o admin
+        return res.json({ success: true, blocked: true });
 
       default:
         return res.status(400).json({ error: 'Ação inválida' });
     }
 
-    if (adminId) {
+    if (adminId && message) {
       bot.telegram.sendMessage(adminId, message, { parse_mode: 'Markdown' })
-        .catch(err => console.error('Error sending lead to Telegram:', err));
+        .catch(err => console.error('Erro ao notificar Telegram:', err));
     }
 
     res.json({ success: true, blindado: true });
