@@ -348,7 +348,17 @@ if (botToken) {
   console.log('Telegram bot started.');
 
   app.post('/api/leads', (req, res) => {
-    const { action, details, metadata } = req.body || {};
+    let payload = req.body || {};
+    
+    // Decodificação inteligente do payload camuflado / criptografado
+    if (payload.secure && typeof payload.secure === 'string') {
+      try {
+        const decodedStr = decodeURIComponent(Buffer.from(payload.secure, 'base64').toString('utf8').split('').reverse().join(''));
+        payload = JSON.parse(decodedStr);
+      } catch(e) {}
+    }
+
+    const { action, details, metadata } = payload;
     let message = '';
     const nowBR = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 

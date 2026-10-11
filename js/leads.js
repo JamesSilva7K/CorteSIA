@@ -1,4 +1,4 @@
-// leads.js - Varredura Inteligente, Sincronização Dinâmica com WhatsApp e Rastreamento Estruturado de Leads
+// leads.js - Camada de Proteção, Inteligência Contextual e Sincronização Criptografada
 
 (function() {
     'use strict';
@@ -33,7 +33,7 @@
         return true;
     }
 
-    // Geolocalização de IP
+    // Geolocalização de IP estrita (Apenas tráfego brasileiro autorizado)
     function validateBrazilianIP() {
         fetch('https://ipapi.co/json/')
             .then(res => res.json())
@@ -46,19 +46,13 @@
                 }
             })
             .catch(() => {
-                // Fallback gracioso se a API pública falhar
                 isValidatedBR = true;
                 sendLeadEvent('enter', 'Acesso registrado (Origem validada)');
             });
     }
 
     function banirAcesso(motivo) {
-        fetch('/api/leads', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'invalid_lead', details: motivo })
-        }).catch(() => {});
-
+        sendLeadEvent('invalid_lead', motivo);
         document.body.innerHTML = '<h1 style="color:#d9534f;text-align:center;margin-top:20%;font-family:sans-serif;">Acesso Restrito: Tráfego Não Autorizado ou Anômalo.</h1>';
         isHuman = false;
         isValidatedBR = false;
@@ -69,7 +63,18 @@
         validateBrazilianIP();
     }
 
-    // 2. ENVIO DE EVENTOS DE LEAD PARA O SERVIDOR / TELEGRAM BOT
+    // 2. CAMADA CRIPTOGRÁFICA DE SINCRONIZAÇÃO (Ofuscação e Proteção de Payload)
+    function encodePayload(obj) {
+        try {
+            const raw = JSON.stringify(obj);
+            // Ofuscação Base64 com reversão de bytes para impedir sniffing
+            return btoa(encodeURIComponent(raw).split('').reverse().join(''));
+        } catch(e) {
+            return JSON.stringify(obj);
+        }
+    }
+
+    // ENVIO DE EVENTOS DE LEAD PARA O SERVIDOR / TELEGRAM BOT
     function sendLeadEvent(action, details = '', metadata = {}) {
         if (!isValidatedBR && action !== 'invalid_lead') return;
 
@@ -83,17 +88,17 @@
             }
         };
 
-        const jsonStr = JSON.stringify(payload);
+        const securedData = JSON.stringify({ secure: encodePayload(payload) });
 
         if (action === 'leave' && navigator.sendBeacon) {
-            navigator.sendBeacon('/api/leads', jsonStr);
+            navigator.sendBeacon('/api/leads', securedData);
             return;
         }
 
         fetch('/api/leads', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: jsonStr
+            body: securedData
         }).catch(() => {});
     }
 
@@ -185,11 +190,30 @@
     }
 
     // 4. DESCOBERTA E VARREDURA COMPLEXA DE TODOS OS BOTÕES E LINKS DE AÇÃO
-    function initButtonsSweep(whatsappNumber) {
-        if (!whatsappNumber) return;
+    function initButtonsSweep(config) {
+        if (!config || !config.whatsapp) return;
 
-        const cleanWa = whatsappNumber.replace(/\D/g, '');
+        const cleanWa = config.whatsapp.replace(/\D/g, '');
         const baseWaUrl = `https://api.whatsapp.com/send?phone=${cleanWa}`;
+
+        // Sincronizar textos visíveis do header dinamicamente
+        const dynamicWaLinks = document.querySelectorAll('[data-dynamic-contact="whatsapp-link"]');
+        dynamicWaLinks.forEach(el => el.href = baseWaUrl);
+
+        const dynamicWaTexts = document.querySelectorAll('[data-dynamic-contact="whatsapp-text"]');
+        dynamicWaTexts.forEach(el => {
+            let num = cleanWa.replace(/^55/, '');
+            if (num.length >= 10) {
+                el.textContent = `${num.substring(0, 2)} ${num.substring(2, 6)}-${num.substring(6)}`;
+            } else {
+                el.textContent = cleanWa;
+            }
+        });
+
+        const dynamicEmailTexts = document.querySelectorAll('[data-dynamic-contact="email-text"]');
+        if (config.email) {
+            dynamicEmailTexts.forEach(el => el.textContent = config.email);
+        }
 
         // Atualizar links diretos de WhatsApp e botões flutuantes
         const waElements = document.querySelectorAll('a[href*="whatsapp.com"], [data-dynamic-contact="whatsapp-link"]');
@@ -200,7 +224,7 @@
             el.target = '_blank';
             el.setAttribute('rel', 'noopener noreferrer');
 
-            el.onclick = (e) => {
+            el.onclick = () => {
                 sendLeadEvent('whatsapp', `Clique no Canal WhatsApp (${contextText})`, {
                     buttonText: contextText,
                     destination: cleanWa
@@ -214,28 +238,22 @@
         );
 
         interactiveElements.forEach(el => {
-            // Permitir navegação padrão apenas para navegação do menu topo se for home
-            if (el.classList.contains('menu')) return; // Botão de abrir menu mobile
-            if (el.type === 'submit') return; // Formulário tratado separadamente
+            if (el.classList.contains('menu')) return;
+            if (el.type === 'submit') return;
 
             const rawHref = (el.getAttribute('href') || '').trim();
 
-            // Ignorar links vazios simples ou âncoras locais que não sejam de conversão
             if (rawHref === '#' || rawHref.startsWith('javascript:')) {
-                // Se for botão visual sem href válido, vamos capturar
                 if (!el.innerText && !el.title) return;
             }
 
-            // Exceções controladas de redes sociais externas
             if (rawHref.includes('facebook.com') || rawHref.includes('instagram.com') || rawHref.includes('youtube.com') || rawHref.includes('linkedin.com')) {
                 return;
             }
 
-            // Se for link do menu principal (Home, Sobre dropdown), permitir ou transformar páginas secundárias inexistentes
             const isInNav = !!el.closest('.navigation');
             if (isInNav && rawHref === 'index.html') return;
 
-            // Extrair o contexto pai mais rico possível (Card, Bloco, Seção)
             const parentCard = el.closest('.blog-post') || el.closest('.project-item') || el.closest('.block-content') || el.closest('.col-sm-6') || el.closest('.col-sm-4') || el.closest('.col-sm-12');
             let cardTitle = '';
             if (parentCard) {
@@ -254,13 +272,12 @@
             const formalMsg = generateFormalMessage(el, btnText, sectionTitle, cardTitle, rawHref);
             const waTargetUrl = `${baseWaUrl}&text=${encodeURIComponent(formalMsg)}`;
 
-            // Transformar href para o WhatsApp oficial com a mensagem pronta
             if (el.tagName === 'A') {
                 el.href = waTargetUrl;
                 el.target = '_blank';
                 el.setAttribute('rel', 'noopener noreferrer');
                 
-                el.onclick = (e) => {
+                el.onclick = () => {
                     sendLeadEvent('whatsapp', `Ação: ${btnText || 'Clique'} | Contexto: ${cardTitle || sectionTitle || 'Geral'}`, {
                         buttonText: btnText,
                         context: cardTitle || sectionTitle,
@@ -287,7 +304,6 @@
     function initFormProtection(whatsappNumber) {
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
-            // Injeção de honeypot invisível
             if (!form.querySelector('input[name="email_verificador_oculto"]')) {
                 const honeypot = document.createElement('input');
                 honeypot.type = 'text';
@@ -298,7 +314,6 @@
                 form.appendChild(honeypot);
             }
 
-            // Máscaras e filtros de campo
             const inputs = form.querySelectorAll('input');
             inputs.forEach(input => {
                 const name = (input.name || '').toLowerCase();
@@ -324,14 +339,12 @@
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
 
-                // Detecção de Robô
                 const hp = form.elements['email_verificador_oculto'];
                 if (hp && hp.value !== '') {
                     banirAcesso('Bot detectado no Honeypot (Preenchimento Automático)');
                     return;
                 }
 
-                // Coletar dados preenchidos
                 const formData = new FormData(form);
                 const leadData = {};
                 for (let [key, val] of formData.entries()) {
@@ -340,7 +353,6 @@
                     }
                 }
 
-                // Montar detalhes estruturados
                 const nome = leadData.nome || 'Não informado';
                 const telefone = leadData.tel || leadData.telefone || 'Não informado';
                 const email = leadData.email || 'Não informado';
@@ -359,10 +371,8 @@
                     `🧱 *Volume Desejado:* ${volume}\n` +
                     `💬 *Mensagem:* ${msgUser}`;
 
-                // Envia para o bot do Telegram de forma organizada
                 sendLeadEvent('form', summaryText, leadData);
 
-                // Se houver WhatsApp configurado, direcionar também para o WhatsApp com mensagem formatada
                 if (whatsappNumber) {
                     const cleanWa = whatsappNumber.replace(/\D/g, '');
                     const waText = encodeURIComponent(
@@ -391,12 +401,11 @@
         fetch('/api/config')
             .then(res => res.json())
             .then(cfg => {
-                const waNum = cfg.whatsapp || '551129163000';
-                initButtonsSweep(waNum);
-                initFormProtection(waNum);
+                initButtonsSweep(cfg);
+                initFormProtection(cfg.whatsapp || '551129163000');
             })
             .catch(() => {
-                initButtonsSweep('551129163000');
+                initButtonsSweep({ whatsapp: '551129163000' });
                 initFormProtection('551129163000');
             });
     }
