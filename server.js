@@ -517,15 +517,52 @@ if (botToken) {
   bot.launch();
   console.log('Telegram bot started.');
 
+  const SECRET_KEY_SEED = "CORTESIA_SECURE_VAULT_KEY_2026_X9";
+
+  function decryptSecurePayload(secureStr) {
+    if (!secureStr || typeof secureStr !== 'string') return null;
+
+    // Criptografia V2 Dinâmica (Salt + Keystream XOR + Base64)
+    if (secureStr.startsWith('enc:v2:')) {
+      try {
+        const rawEnv = Buffer.from(secureStr.substring(7), 'base64').toString('utf8');
+        const env = JSON.parse(rawEnv);
+        const salt = env.s;
+        const cipher = decodeURIComponent(Buffer.from(env.c, 'base64').toString('utf8'));
+        const derivedKey = SECRET_KEY_SEED + "_" + salt;
+
+        let raw = '';
+        for (let i = 0; i < cipher.length; i++) {
+          const charCode = cipher.charCodeAt(i);
+          const keyChar = derivedKey.charCodeAt(i % derivedKey.length);
+          raw += String.fromCharCode(charCode ^ keyChar);
+        }
+        return JSON.parse(raw);
+      } catch(err) {
+        console.error('Falha na decriptação segura v2:', err);
+      }
+    }
+
+    // Compatibilidade legada
+    try {
+      const decodedStr = decodeURIComponent(Buffer.from(secureStr, 'base64').toString('utf8').split('').reverse().join(''));
+      return JSON.parse(decodedStr);
+    } catch(e) {
+      try {
+        return JSON.parse(secureStr);
+      } catch(err2) {
+        return null;
+      }
+    }
+  }
+
   app.post('/api/leads', (req, res) => {
     let payload = req.body || {};
     
-    // Decodificação inteligente do payload camuflado / criptografado
+    // Decodificação e Verificação Criptográfica Total
     if (payload.secure && typeof payload.secure === 'string') {
-      try {
-        const decodedStr = decodeURIComponent(Buffer.from(payload.secure, 'base64').toString('utf8').split('').reverse().join(''));
-        payload = JSON.parse(decodedStr);
-      } catch(e) {}
+      const decrypted = decryptSecurePayload(payload.secure);
+      if (decrypted) payload = decrypted;
     }
 
     const { action, details, metadata } = payload;

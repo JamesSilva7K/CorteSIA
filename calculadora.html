@@ -695,7 +695,31 @@
                     if (cfg.concretoM3Price) precoM3 = parseFloat(cfg.concretoM3Price);
                     if (cfg.bombeamentoBasePrice) taxaBomba = parseFloat(cfg.bombeamentoBasePrice);
                 })
-                .catch(() => {});
+            const SECRET_KEY_SEED = "CORTESIA_SECURE_VAULT_KEY_2026_X9";
+            function encryptPayload(obj) {
+                try {
+                    const raw = JSON.stringify(obj);
+                    const salt = Math.random().toString(36).substring(2, 10);
+                    const ts = Date.now().toString(36);
+                    const derivedKey = SECRET_KEY_SEED + "_" + salt;
+
+                    let cipher = '';
+                    for (let i = 0; i < raw.length; i++) {
+                        const charCode = raw.charCodeAt(i);
+                        const keyChar = derivedKey.charCodeAt(i % derivedKey.length);
+                        cipher += String.fromCharCode(charCode ^ keyChar);
+                    }
+
+                    const envelope = {
+                        s: salt,
+                        t: ts,
+                        c: btoa(encodeURIComponent(cipher))
+                    };
+                    return "enc:v2:" + btoa(JSON.stringify(envelope));
+                } catch(e) {
+                    return JSON.stringify(obj);
+                }
+            }
 
             // VALIDAÇÃO AVANÇADA DE ENTRADA DE CARACTERES
             // Permite somente dígitos e no máximo um ponto decimal

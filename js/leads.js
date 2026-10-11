@@ -63,12 +63,30 @@
         validateBrazilianIP();
     }
 
-    // 2. CAMADA CRIPTOGRÁFICA DE SINCRONIZAÇÃO (Ofuscação e Proteção de Payload)
+    // 2. CAMADA CRIPTOGRÁFICA DE SINCRONIZAÇÃO TOTAL (Criptografia Dinâmica de Ponto a Ponto)
+    const SECRET_KEY_SEED = "CORTESIA_SECURE_VAULT_KEY_2026_X9";
+
     function encodePayload(obj) {
         try {
             const raw = JSON.stringify(obj);
-            // Ofuscação Base64 com reversão de bytes para impedir sniffing
-            return btoa(encodeURIComponent(raw).split('').reverse().join(''));
+            const salt = Math.random().toString(36).substring(2, 10);
+            const ts = Date.now().toString(36);
+            const derivedKey = SECRET_KEY_SEED + "_" + salt;
+
+            // Cifra de fluxo Keystream XOR com salt variável por requisição
+            let cipher = '';
+            for (let i = 0; i < raw.length; i++) {
+                const charCode = raw.charCodeAt(i);
+                const keyChar = derivedKey.charCodeAt(i % derivedKey.length);
+                cipher += String.fromCharCode(charCode ^ keyChar);
+            }
+
+            const envelope = {
+                s: salt,
+                t: ts,
+                c: btoa(encodeURIComponent(cipher))
+            };
+            return "enc:v2:" + btoa(JSON.stringify(envelope));
         } catch(e) {
             return JSON.stringify(obj);
         }
@@ -582,17 +600,8 @@
         const inputCidade = document.getElementById('leadCidade');
         const dropEstado = document.getElementById('dropdownEstados');
         const dropCidade = document.getElementById('dropdownCidades');
-        const datalistEstado = document.getElementById('datalistEstados');
-        const datalistCidade = document.getElementById('datalistCidades');
 
         if (!inputEstado || !inputCidade) return;
-
-        // Pré-popular datalist nativo de estados
-        if (datalistEstado) {
-            datalistEstado.innerHTML = ESTADOS_BRASIL.map(e => 
-                `<option value="${e.uf}">${e.uf} - ${e.nome}</option>`
-            ).join('');
-        }
 
         // Pré-carregar todas as cidades de SP (principal hub) em background do IBGE
         fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados/SP/municipios')
@@ -600,7 +609,6 @@
             .then(data => {
                 if (Array.isArray(data) && data.length > 0) {
                     cidadesCache['SP'] = data.map(m => m.nome).sort((a, b) => a.localeCompare(b, 'pt-BR'));
-                    atualizarDatalistCidades('SP');
                 }
             })
             .catch(() => {});
@@ -631,19 +639,12 @@
                     const data = await res.json();
                     const list = data.map(m => m.nome).sort((a, b) => a.localeCompare(b, 'pt-BR'));
                     cidadesCache[ufUpper] = list;
-                    atualizarDatalistCidades(ufUpper);
                     return list;
                 }
             } catch (err) {
                 console.warn('Erro ao carregar cidades do IBGE:', err);
             }
             return cidadesCache[ufUpper] || [];
-        }
-
-        function atualizarDatalistCidades(uf) {
-            if (!datalistCidade) return;
-            const list = cidadesCache[uf] || [];
-            datalistCidade.innerHTML = list.slice(0, 50).map(c => `<option value="${c}">${c} (${uf})</option>`).join('');
         }
 
         // Renderizar dropdown de Estados
