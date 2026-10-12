@@ -514,8 +514,20 @@ if (botToken) {
     }
   });
 
-  bot.launch();
-  console.log('Telegram bot started.');
+  // Inicialização resiliente do bot com tratamento de conflito (409)
+  bot.launch().then(() => {
+    console.log('Telegram bot started successfully.');
+  }).catch((err) => {
+    if (err && err.response && err.response.error_code === 409) {
+      console.warn('Telegram bot: Instância concorrente detectada (409 Conflict). O bot está ativo em outro processo.');
+    } else {
+      console.error('Erro ao iniciar o bot do Telegram:', err && err.message ? err.message : err);
+    }
+  });
+
+  // Encerramento seguro
+  process.once('SIGINT', () => bot.stop('SIGINT'));
+  process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
   const SECRET_KEY_SEED = "CORTESIA_SECURE_VAULT_KEY_2026_X9";
 
