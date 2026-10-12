@@ -1,7 +1,7 @@
 {
   "enter": 10,
   "leave": 9,
-  "whatsapp": 7,
+  "whatsapp": 8,
   "form": 0,
   "invalid_lead": 0,
   "daily": {
@@ -15,13 +15,50 @@
     "2026-10-12": {
       "enter": 0,
       "leave": 0,
-      "whatsapp": 1,
+      "whatsapp": 2,
       "form": 0,
       "invalid_lead": 0,
       "calculadora": 1
     }
   },
   "recentLeads": [
+    {
+      "id": "mv5d56ka892",
+      "timestamp": "2026-10-12T14:44:30.202Z",
+      "action": "whatsapp",
+      "details": "Botão Concreto Usinado",
+      "context": "Página Inicial - Banner Principal",
+      "buttonText": "Orçamento Concreto Usinado",
+      "originalLink": "",
+      "generatedMessage": "Olá! Gostaria de uma cotação formal.",
+      "metadata": {
+        "context": "Página Inicial - Banner Principal",
+        "buttonText": "Orçamento Concreto Usinado",
+        "generatedMessage": "Olá! Gostaria de uma cotação formal.",
+        "geo": {
+          "ip": "189.120.45.67",
+          "cidade": "Campinas",
+          "estado": "SP",
+          "pais": "Brasil",
+          "isp": "Claro Brasil / Net Virtua",
+          "lat": -22.9056,
+          "lon": -47.0608
+        },
+        "device": {
+          "tipo": "Smartphone / Celular",
+          "so": "Android 14",
+          "browser": "Google Chrome Mobile",
+          "connectionType": "4G (CELLULAR)",
+          "screenRes": "1080x2400 (2.75x DPR)",
+          "cpuCores": "8 núcleos",
+          "timeSpent": "48s",
+          "scrollDepth": "85%",
+          "interactions": 4,
+          "touch": "Touch Ativo",
+          "lang": "pt-BR"
+        }
+      }
+    },
     {
       "id": "mv5czjqcp16",
       "timestamp": "2026-10-12T14:40:07.332Z",

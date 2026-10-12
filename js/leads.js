@@ -66,6 +66,21 @@
 
     // Geolocalização de IP estrita e Captura de Telemetria Avançada do Dispositivo
     let clientGeo = null;
+    const pageStartTime = Date.now();
+    let scrollDepthMax = 0;
+    let interactionCount = 0;
+
+    window.addEventListener('scroll', function() {
+        const docH = document.documentElement.scrollHeight - window.innerHeight;
+        if (docH > 0) {
+            const currentDepth = Math.round((window.scrollY / docH) * 100);
+            if (currentDepth > scrollDepthMax) scrollDepthMax = currentDepth;
+        }
+    }, { passive: true });
+
+    window.addEventListener('click', function() {
+        interactionCount++;
+    }, { passive: true });
 
     function detectDevice() {
         const ua = navigator.userAgent;
@@ -73,37 +88,100 @@
         if (/mobile|android|iphone|ipad|ipod|windows phone/i.test(ua)) {
             tipo = /ipad|tablet/i.test(ua) ? 'Tablet' : 'Smartphone / Celular';
         }
-        let browser = 'Navegador';
-        if (/chrome|crios/i.test(ua)) browser = 'Google Chrome';
+        let browser = 'Navegador Web';
+        if (/edg/i.test(ua)) browser = 'Microsoft Edge';
+        else if (/opr|opera/i.test(ua)) browser = 'Opera';
+        else if (/chrome|crios/i.test(ua)) browser = 'Google Chrome';
         else if (/firefox|fxios/i.test(ua)) browser = 'Mozilla Firefox';
         else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Apple Safari';
-        else if (/edg/i.test(ua)) browser = 'Microsoft Edge';
-        else if (/opera|opr/i.test(ua)) browser = 'Opera';
 
         let so = 'Sistema Operacional';
-        if (/windows/i.test(ua)) so = 'Windows';
-        else if (/android/i.test(ua)) so = 'Android';
-        else if (/iphone|ipad|ipod/i.test(ua)) so = 'iOS (iPhone/iPad)';
+        if (/windows nt 10\.0/i.test(ua)) so = 'Windows 10/11';
+        else if (/windows/i.test(ua)) so = 'Windows';
+        else if (/android/i.test(ua)) {
+            const matchAnd = ua.match(/Android\s([0-9\.]+)/i);
+            so = matchAnd ? `Android ${matchAnd[1]}` : 'Android';
+        }
+        else if (/iphone/i.test(ua)) {
+            const matchIos = ua.match(/OS\s([0-9_]+)/i);
+            so = matchIos ? `iOS ${matchIos[1].replace(/_/g, '.')}` : 'iOS (iPhone)';
+        }
+        else if (/ipad/i.test(ua)) so = 'iPadOS';
         else if (/macintosh|mac os x/i.test(ua)) so = 'macOS';
         else if (/linux/i.test(ua)) so = 'Linux';
 
-        const screenRes = `${window.screen.width}x${window.screen.height}`;
-        return { tipo, browser, so, screenRes };
+        // Detecção de Rede / Conexão Real (4G, 5G, Wi-Fi)
+        let connectionType = 'Banda Larga / Wi-Fi';
+        if (navigator.connection) {
+            const conn = navigator.connection;
+            if (conn.effectiveType) connectionType = conn.effectiveType.toUpperCase();
+            if (conn.type) connectionType += ` (${conn.type})`;
+        }
+
+        // Hardware Concurrency & Memória
+        const cpuCores = navigator.hardwareConcurrency ? `${navigator.hardwareConcurrency} núcleos` : 'Padrão';
+        const ram = navigator.deviceMemory ? `~${navigator.deviceMemory} GB` : '';
+        const screenRes = `${window.screen.width}x${window.screen.height} (${window.devicePixelRatio || 1}x DPR)`;
+        const timeSpentSec = Math.round((Date.now() - pageStartTime) / 1000);
+
+        return { 
+            tipo, 
+            browser, 
+            so, 
+            screenRes, 
+            connectionType, 
+            cpuCores, 
+            ram,
+            timeSpent: `${timeSpentSec}s`,
+            scrollDepth: `${scrollDepthMax}%`,
+            interactions: interactionCount,
+            touch: ('ontouchstart' in window || navigator.maxTouchPoints > 0) ? 'Touch Ativo' : 'Mouse / Teclado',
+            lang: navigator.language || 'pt-BR'
+        };
     }
 
     function validateBrazilianIP() {
-        fetch('https://ipapi.co/json/')
+        // Consulta primária com ipwho.is (Muito rica em dados de ISP e coordenadas no Brasil)
+        fetch('https://ipwho.is/')
             .then(res => res.json())
             .then(data => {
+                if (data && data.success && data.country_code !== 'BR') {
+                    banirAcesso(`IP Estrangeiro Bloqueado: ${data.country_code} (${data.ip || ''})`);
+                } else if (data && data.success) {
+                    clientGeo = {
+                        ip: data.ip,
+                        cidade: data.city,
+                        estado: data.region_code || data.region,
+                        pais: data.country || 'Brasil',
+                        isp: (data.connection && data.connection.isp) || data.org || 'Provedor Nacional',
+                        lat: data.latitude,
+                        lon: data.longitude,
+                        timezone: (data.timezone && data.timezone.id) || 'America/Sao_Paulo'
+                    };
+                    isValidatedBR = true;
+                    sendLeadEvent('enter', 'Acesso legítimo validado');
+                } else {
+                    fallbackGeo();
+                }
+            })
+            .catch(() => {
+                fallbackGeo();
+            });
+    }
+
+    function fallbackGeo() {
+        fetch('https://ipapi.co/json/')
+            .then(r => r.json())
+            .then(data => {
                 if (data && data.country && data.country !== 'BR') {
-                    banirAcesso(`IP Estrangeiro Bloqueado: ${data.country} (${data.ip || ''})`);
+                    banirAcesso(`IP Estrangeiro Bloqueado: ${data.country}`);
                 } else {
                     clientGeo = {
                         ip: data.ip,
                         cidade: data.city,
                         estado: data.region_code || data.region,
                         pais: data.country_name || 'Brasil',
-                        isp: data.org,
+                        isp: data.org || 'Provedor Nacional',
                         lat: data.latitude,
                         lon: data.longitude
                     };
@@ -112,29 +190,8 @@
                 }
             })
             .catch(() => {
-                // Fallback secundário seguro
-                fetch('https://freeipapi.com/api/json')
-                    .then(r => r.json())
-                    .then(fData => {
-                        if (fData && fData.countryCode && fData.countryCode !== 'BR') {
-                            banirAcesso(`IP Estrangeiro Bloqueado: ${fData.countryCode}`);
-                        } else {
-                            clientGeo = {
-                                ip: fData.ipAddress,
-                                cidade: fData.cityName,
-                                estado: fData.regionName,
-                                pais: fData.countryName || 'Brasil',
-                                lat: fData.latitude,
-                                lon: fData.longitude
-                            };
-                            isValidatedBR = true;
-                            sendLeadEvent('enter', 'Acesso registrado (Origem validada)');
-                        }
-                    })
-                    .catch(() => {
-                        isValidatedBR = true;
-                        sendLeadEvent('enter', 'Acesso registrado (Origem validada)');
-                    });
+                isValidatedBR = true;
+                sendLeadEvent('enter', 'Acesso registrado (Origem validada)');
             });
     }
 

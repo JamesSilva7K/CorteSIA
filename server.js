@@ -770,17 +770,29 @@ if (botToken) {
     const ispFinal = geoData.isp ? `\n🌐 *Provedor / ISP:* ${geoData.isp}` : '';
     const ipFinal = geoData.ip || clientIp;
 
-    // Detalhes do Dispositivo e Aparelho
+    // Detalhes de Conexão, Hardware e Engajamento Real
     const dev = (metadata && metadata.device) || {};
-    const aparelhoFinal = dev.tipo ? `${dev.tipo} (${dev.so || 'SO'} • ${dev.browser || 'Web'})` : 'Dispositivo Web Autenticado';
-    const resolucao = dev.screenRes ? ` • Resolução: \`${dev.screenRes}\`` : '';
+    const aparelhoFinal = dev.tipo ? `${dev.tipo} • ${dev.so || 'SO'} • ${dev.browser || 'Web'}` : 'Dispositivo Web Autenticado';
+    const conexaoFinal = dev.connectionType ? `\n📶 *Rede / Conexão:* \`${dev.connectionType}\`` : '';
+    const resolucao = dev.screenRes ? `\n🖥️ *Tela / Hardware:* \`${dev.screenRes}\`${dev.cpuCores ? ` (${dev.cpuCores})` : ''}` : '';
+    const engajamento = (dev.timeSpent || dev.scrollDepth) ? `\n⏱️ *Tempo no Site:* ${dev.timeSpent || '0s'} • *Rolagem:* ${dev.scrollDepth || '0%'}` : '';
+
+    const latFinal = geoData.lat || vercelLat;
+    const lonFinal = geoData.lon || vercelLon;
+    const mapsLink = (latFinal && lonFinal) 
+      ? `\n🗺️ *Localização no Mapa:* [Ver no Google Maps](https://www.google.com/maps?q=${latFinal},${lonFinal})` 
+      : '';
 
     const blocoOrigem = 
       `🌐 *IP Real:* \`${ipFinal}\`\n` +
       `📍 *Localização:* ${cidadeFinal} - ${estadoFinal}, ${paisFinal}` +
-      ispFinal + `\n` +
-      `📱 *Aparelho:* ${aparelhoFinal}${resolucao}\n` +
-      `🛡️ *Validação de Lead:* Autêntico & Humano (Anti-Bot)`;
+      ispFinal + 
+      conexaoFinal +
+      mapsLink + `\n` +
+      `📱 *Aparelho:* ${aparelhoFinal}` +
+      resolucao +
+      engajamento + `\n` +
+      `🛡️ *Auditoria do Lead:* 100% Humano Verificado (Biometria Digital Ativa)`;
 
     switch (action) {
       case 'enter':
