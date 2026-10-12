@@ -4247,7 +4247,7 @@ form label.error {
 
 		transform-origin: 100% 0;
 
-		-webkit- transform-origin: 100% 0;
+		-webkit-transform-origin: 100% 0;
 
 		opacity: 0.9;
 
@@ -6137,7 +6137,7 @@ form label.error {
 
 	content: "\f068";
 
-	font-famiyl: 'FontAwesome';
+	font-family: 'FontAwesome';
 
 }
 
@@ -9247,6 +9247,9 @@ background-size:cover
     align-items: center;
     justify-content: space-between;
     transition: background 0.12s ease, color 0.12s ease;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
 }
 
