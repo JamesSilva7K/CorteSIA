@@ -302,7 +302,7 @@ if (botToken) {
     ctx.replyWithMarkdown(dashboard.text, dashboard.markup);
   });
 
-  bot.command('dashboard', (ctx) => {
+  bot.command(['dashboard', 'painel', 'menu', 'admin'], (ctx) => {
     const dashboard = getDashboard();
     ctx.replyWithMarkdown(dashboard.text, dashboard.markup);
   });
@@ -671,20 +671,33 @@ if (botToken) {
     }
   });
 
-  // Inicialização resiliente do bot com tratamento de conflito (409)
-  bot.launch().then(() => {
-    console.log('Telegram bot started successfully.');
-  }).catch((err) => {
-    if (err && err.response && err.response.error_code === 409) {
-      console.warn('Telegram bot: Instância concorrente detectada (409 Conflict). O bot está ativo em outro processo.');
-    } else {
-      console.error('Erro ao iniciar o bot do Telegram:', err && err.message ? err.message : err);
+  // Rota de Webhook do Telegram para execução serverless (Vercel)
+  app.post('/api/telegram-webhook', async (req, res) => {
+    try {
+      await bot.handleUpdate(req.body);
+      res.status(200).send('OK');
+    } catch (err) {
+      console.error('Erro ao processar webhook do Telegram:', err);
+      res.status(200).send('ERROR');
     }
   });
 
-  // Encerramento seguro
-  process.once('SIGINT', () => bot.stop('SIGINT'));
-  process.once('SIGTERM', () => bot.stop('SIGTERM'));
+  // Em ambiente local ou servidor persistente, usa polling; na Vercel o webhook é acionado
+  if (!process.env.VERCEL) {
+    bot.launch().then(() => {
+      console.log('Telegram bot started successfully via polling.');
+    }).catch((err) => {
+      if (err && err.response && err.response.error_code === 409) {
+        console.warn('Telegram bot: Instância concorrente detectada (409 Conflict).');
+      } else {
+        console.error('Erro ao iniciar bot do Telegram:', err && err.message ? err.message : err);
+      }
+    });
+
+    // Encerramento seguro
+    process.once('SIGINT', () => bot.stop('SIGINT'));
+    process.once('SIGTERM', () => bot.stop('SIGTERM'));
+  }
 
   const SECRET_KEY_SEED = "CORTESIA_SECURE_VAULT_KEY_2026_X9";
 
