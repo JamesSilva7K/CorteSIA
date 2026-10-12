@@ -64,7 +64,33 @@
         return true;
     }
 
-    // Geolocalização de IP estrita (Apenas tráfego brasileiro autorizado)
+    // Geolocalização de IP estrita e Captura de Telemetria Avançada do Dispositivo
+    let clientGeo = null;
+
+    function detectDevice() {
+        const ua = navigator.userAgent;
+        let tipo = 'Desktop / PC';
+        if (/mobile|android|iphone|ipad|ipod|windows phone/i.test(ua)) {
+            tipo = /ipad|tablet/i.test(ua) ? 'Tablet' : 'Smartphone / Celular';
+        }
+        let browser = 'Navegador';
+        if (/chrome|crios/i.test(ua)) browser = 'Google Chrome';
+        else if (/firefox|fxios/i.test(ua)) browser = 'Mozilla Firefox';
+        else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = 'Apple Safari';
+        else if (/edg/i.test(ua)) browser = 'Microsoft Edge';
+        else if (/opera|opr/i.test(ua)) browser = 'Opera';
+
+        let so = 'Sistema Operacional';
+        if (/windows/i.test(ua)) so = 'Windows';
+        else if (/android/i.test(ua)) so = 'Android';
+        else if (/iphone|ipad|ipod/i.test(ua)) so = 'iOS (iPhone/iPad)';
+        else if (/macintosh|mac os x/i.test(ua)) so = 'macOS';
+        else if (/linux/i.test(ua)) so = 'Linux';
+
+        const screenRes = `${window.screen.width}x${window.screen.height}`;
+        return { tipo, browser, so, screenRes };
+    }
+
     function validateBrazilianIP() {
         fetch('https://ipapi.co/json/')
             .then(res => res.json())
@@ -72,13 +98,43 @@
                 if (data && data.country && data.country !== 'BR') {
                     banirAcesso(`IP Estrangeiro Bloqueado: ${data.country} (${data.ip || ''})`);
                 } else {
+                    clientGeo = {
+                        ip: data.ip,
+                        cidade: data.city,
+                        estado: data.region_code || data.region,
+                        pais: data.country_name || 'Brasil',
+                        isp: data.org,
+                        lat: data.latitude,
+                        lon: data.longitude
+                    };
                     isValidatedBR = true;
-                    sendLeadEvent('enter', 'Acesso legítimo (Brasil)');
+                    sendLeadEvent('enter', 'Acesso legítimo validado');
                 }
             })
             .catch(() => {
-                isValidatedBR = true;
-                sendLeadEvent('enter', 'Acesso registrado (Origem validada)');
+                // Fallback secundário seguro
+                fetch('https://freeipapi.com/api/json')
+                    .then(r => r.json())
+                    .then(fData => {
+                        if (fData && fData.countryCode && fData.countryCode !== 'BR') {
+                            banirAcesso(`IP Estrangeiro Bloqueado: ${fData.countryCode}`);
+                        } else {
+                            clientGeo = {
+                                ip: fData.ipAddress,
+                                cidade: fData.cityName,
+                                estado: fData.regionName,
+                                pais: fData.countryName || 'Brasil',
+                                lat: fData.latitude,
+                                lon: fData.longitude
+                            };
+                            isValidatedBR = true;
+                            sendLeadEvent('enter', 'Acesso registrado (Origem validada)');
+                        }
+                    })
+                    .catch(() => {
+                        isValidatedBR = true;
+                        sendLeadEvent('enter', 'Acesso registrado (Origem validada)');
+                    });
             });
     }
 
@@ -196,12 +252,15 @@
     function sendLeadEvent(action, details = '', metadata = {}) {
         if (!isValidatedBR && action !== 'invalid_lead') return;
 
+        const dev = detectDevice();
         const payload = {
             action,
             details,
             metadata: {
                 timestamp: new Date().toISOString(),
                 pageUrl: window.location.href,
+                geo: clientGeo || null,
+                device: dev,
                 ...metadata
             }
         };

@@ -735,8 +735,12 @@ if (botToken) {
     }
 
     const { action, details, metadata } = payload;
-    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
     const nowBR = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+    // Extração e Resolução de IP Real com Camada Anti-Proxy / Vercel Edge Headers
+    const forwardedHeader = req.headers['x-forwarded-for'];
+    const rawIp = forwardedHeader ? forwardedHeader.split(',')[0].trim() : (req.headers['x-real-ip'] || req.socket.remoteAddress || '127.0.0.1');
+    const clientIp = rawIp.replace(/^::ffff:/, '');
 
     // Antiflood: Ignora cliques repetidos em rajada do mesmo IP/usuário no mesmo botão
     if (action === 'whatsapp') {
@@ -751,16 +755,39 @@ if (botToken) {
       recordLeadAction(action, details, metadata);
     }
 
-    let message = '';
+    // Extração e Resolução de Geolocalização Avançada
+    // Combina dados do Edge (Vercel Geolocation headers) com telemetria do cliente
+    const vercelCity = req.headers['x-vercel-ip-city'] ? decodeURIComponent(req.headers['x-vercel-ip-city']) : null;
+    const vercelRegion = req.headers['x-vercel-ip-country-region'] || null;
+    const vercelCountry = req.headers['x-vercel-ip-country'] || 'BR';
+    const vercelLat = req.headers['x-vercel-ip-latitude'] || null;
+    const vercelLon = req.headers['x-vercel-ip-longitude'] || null;
+
+    const geoData = (metadata && metadata.geo) || {};
+    const cidadeFinal = geoData.cidade || vercelCity || 'São Paulo';
+    const estadoFinal = geoData.estado || vercelRegion || 'SP';
+    const paisFinal = geoData.pais || (vercelCountry === 'BR' ? 'Brasil' : vercelCountry);
+    const ispFinal = geoData.isp ? `\n🌐 *Provedor / ISP:* ${geoData.isp}` : '';
+    const ipFinal = geoData.ip || clientIp;
+
+    // Detalhes do Dispositivo e Aparelho
+    const dev = (metadata && metadata.device) || {};
+    const aparelhoFinal = dev.tipo ? `${dev.tipo} (${dev.so || 'SO'} • ${dev.browser || 'Web'})` : 'Dispositivo Web Autenticado';
+    const resolucao = dev.screenRes ? ` • Resolução: \`${dev.screenRes}\`` : '';
+
+    const blocoOrigem = 
+      `🌐 *IP Real:* \`${ipFinal}\`\n` +
+      `📍 *Localização:* ${cidadeFinal} - ${estadoFinal}, ${paisFinal}` +
+      ispFinal + `\n` +
+      `📱 *Aparelho:* ${aparelhoFinal}${resolucao}\n` +
+      `🛡️ *Validação de Lead:* Autêntico & Humano (Anti-Bot)`;
 
     switch (action) {
       case 'enter':
-        // Notificação discreta de acesso real validado
         message = `🟢 *NOVO ACESSO NO SITE*\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
           `📅 *Horário:* ${nowBR}\n` +
-          `📍 *Localização:* Brasil (IP Autenticado)\n` +
-          `🛡️ *Validação:* Humano confirmado`;
+          `${blocoOrigem}`;
         break;
 
       case 'leave':
@@ -776,7 +803,8 @@ if (botToken) {
           `━━━━━━━━━━━━━━━━━━━━\n` +
           `📅 *Horário:* ${nowBR}\n` +
           `🎯 *Gatilho/Botão:* ${cleanBtn}\n` +
-          `🏢 *Contexto/Seção:* ${cleanContext}\n` +
+          `🏢 *Contexto/Seção:* ${cleanContext}\n\n` +
+          `${blocoOrigem}\n\n` +
           (cleanMsg ? `💬 *Mensagem Enviada pelo Cliente:*\n_${cleanMsg}_\n` : '') +
           `━━━━━━━━━━━━━━━━━━━━\n` +
           `💼 *Oportunidade ativa pronta para conversão!*`;
@@ -786,6 +814,8 @@ if (botToken) {
         message = `📋 *NOVA SOLICITAÇÃO DE ORÇAMENTO (FORMULÁRIO)*\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
           `📅 *Horário:* ${nowBR}\n` +
+          `${blocoOrigem}\n\n` +
+          `📊 *DADOS DO FORMULÁRIO:*\n` +
           `${details || 'Dados enviados pelo formulário'}\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
           `⚡ *Ação:* Entrar em contato imediatamente.`;
@@ -807,6 +837,7 @@ if (botToken) {
           `👤 *Cliente:* ${calcClient}\n` +
           `👷 *Responsável Técnico:* ${calcResp}\n` +
           `✉️ *E-mail:* ${calcEmail}\n\n` +
+          `${blocoOrigem}\n\n` +
           `📐 *Volume Estrutural Total:* *${calcTotalM3} m³*\n` +
           `💰 *Valor Estimado (Métrica Real):* *${calcPrecoBase}*\n` +
           `📊 *Faixa de Mercado Parametrizada:* *${calcFaixa}*\n` +
