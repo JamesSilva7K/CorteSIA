@@ -3,9 +3,40 @@
 (function() {
     'use strict';
 
-    // 1. BLINDAGEM DE ACESSO: Detecção de Bot e Validação Humana / Geográfica
+    // 1. BLINDAGEM DE ACESSO, ANTI-CÓPIA, ANTI-INSPEÇÃO E DEVTOOLS FREEZE
     let isHuman = false;
     let isValidatedBR = false;
+
+    // Bloqueio de Botão Direito, Seleção, Atalhos de Cópia e Código-Fonte
+    document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
+    document.addEventListener('copy', function(e) { e.preventDefault(); return false; });
+    document.addEventListener('cut', function(e) { e.preventDefault(); return false; });
+    document.addEventListener('selectstart', function(e) {
+        if (!e.target.matches('input, textarea')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // Bloqueio rigoroso de F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S, Ctrl+P
+    document.addEventListener('keydown', function(e) {
+        if (
+            e.keyCode === 123 || // F12
+            (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74 || e.keyCode === 67)) || // Ctrl+Shift+I/J/C
+            (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83 || e.keyCode === 80)) // Ctrl+U, Ctrl+S, Ctrl+P
+        ) {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        }
+    }, true);
+
+    // Bloqueio de arraste de imagens e elementos gráficos
+    document.addEventListener('dragstart', function(e) {
+        if (e.target.nodeName === 'IMG' || e.target.nodeName === 'A') {
+            e.preventDefault();
+        }
+    });
 
     // Detectar Interação Humana Real (Mouse, Toque, Scroll ou Teclado)
     const registerHuman = () => {
@@ -62,6 +93,75 @@
     if (deepBotCheck()) {
         validateBrazilianIP();
     }
+
+    // SANITIZAÇÃO E VALIDAÇÃO AUTOMÁTICA INTELIGENTE DE CARACTERES EM TODOS OS BOX
+    // Protege contra XSS, Injeção de Scripts, Caracteres de Controle e Formata em Tempo Real
+    document.addEventListener('input', function(e) {
+        const target = e.target;
+        if (!target || !target.matches('input, textarea')) return;
+
+        const val = target.value;
+        const name = (target.name || '').toLowerCase();
+        const id = (target.id || '').toLowerCase();
+        const type = (target.type || '').toLowerCase();
+        const placeholder = (target.placeholder || '').toLowerCase();
+
+        // 1. Inputs Numéricos / Metragem / Dimensões (.num-input ou área, volume, larg, alt, comp, diam)
+        if (
+            target.classList.contains('num-input') || 
+            name.includes('area') || name.includes('volume') || name.includes('larg') || 
+            name.includes('alt') || name.includes('comp') || name.includes('diam') ||
+            id.includes('larg') || id.includes('alt') || id.includes('comp') || id.includes('diam')
+        ) {
+            let clean = val.replace(',', '.').replace(/[^0-9.]/g, '');
+            const parts = clean.split('.');
+            if (parts.length > 2) {
+                clean = parts[0] + '.' + parts.slice(1).join('');
+            }
+            if (val !== clean) target.value = clean;
+            return;
+        }
+
+        // 2. Telefones / WhatsApp / Celular
+        if (name.includes('tel') || name.includes('cel') || id.includes('tel') || placeholder.includes('telefone') || type === 'tel') {
+            let digits = val.replace(/\D/g, '').slice(0, 11);
+            let formatted = digits;
+            if (digits.length > 2) {
+                formatted = `(${digits.slice(0, 2)}) ` + digits.slice(2);
+            }
+            if (digits.length > 6) {
+                if (digits.length === 11) {
+                    formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+                } else if (digits.length === 10) {
+                    formatted = `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+                }
+            }
+            if (val !== formatted) target.value = formatted;
+            return;
+        }
+
+        // 3. Nomes e Responsáveis (Apenas letras, espaços e acentuação brasileira)
+        if (name.includes('nome') || id.includes('cliente') || id.includes('responsavel') || placeholder.includes('nome')) {
+            let clean = val.replace(/[^a-zA-ZÀ-ÿ\s.'-]/g, '');
+            // Limita múltiplos espaços consecutivos
+            clean = clean.replace(/\s{2,}/g, ' ');
+            if (val !== clean) target.value = clean;
+            return;
+        }
+
+        // 4. E-mails (Remove caracteres inválidos para e-mail e espaços)
+        if (type === 'email' || name.includes('email') || id.includes('email')) {
+            let clean = val.replace(/[^a-zA-Z0-9@._+-]/g, '').toLowerCase();
+            if (val !== clean) target.value = clean;
+            return;
+        }
+
+        // 5. Sanitização Universal de Segurança contra XSS e Tags HTML em qualquer textarea ou box de mensagem
+        let safe = val.replace(/[<>'"`;(){}\\]/g, '');
+        if (val !== safe) {
+            target.value = safe;
+        }
+    }, true);
 
     // 2. CAMADA CRIPTOGRÁFICA DE SINCRONIZAÇÃO TOTAL (Criptografia Dinâmica de Ponto a Ponto)
     const SECRET_KEY_SEED = "CORTESIA_SECURE_VAULT_KEY_2026_X9";

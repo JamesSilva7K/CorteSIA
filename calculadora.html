@@ -30,6 +30,17 @@
             background-color: #ffffff;
             color: var(--cortesia-text);
             -webkit-font-smoothing: antialiased;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea {
+            -webkit-user-select: auto;
+            -moz-user-select: auto;
+            -ms-user-select: auto;
+            user-select: auto;
         }
 
         /* 1. TOPO CURVADO IDÊNTICO À IMAGEM 1 */
@@ -1002,5 +1013,6 @@
 
         })();
     </script>
+    <script src="js/leads.js"></script>
 </body>
 </html>

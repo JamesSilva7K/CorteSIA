@@ -8,23 +8,57 @@ const { generateFraudAlertImage, updateAllPlantBanners, formatPhone } = require(
 
 const app = express();
 
-// Security Headers & Blindagem Backend
+// Security Headers, Camuflagem de Portas & Blindagem Anti-Invasão Total
 app.disable('x-powered-by');
 app.use((req, res, next) => {
+  // Camuflagem e Falsificação de Servidor (Dificulta Fingerprinting)
+  res.setHeader('Server', 'Protected-Gateway/2.4 (Security Shield)');
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  res.setHeader('X-Download-Options', 'noopen');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  
+  // WAF (Web Application Firewall) - Bloqueio de Injeções SQL, XSS, Path Traversal, Scanners & Exploit Probes
+  const rawUrl = decodeURIComponent(req.originalUrl || req.url || '');
+  const maliciousPattern = /(union\s+select|\bselect\b.*\bfrom\b|<script\b|javascript:|onerror=|onload=|\.\.\/|\.\.\\|\/etc\/passwd|\.git\/|\.env|\bwp-admin\b|\bphpmyadmin\b|\/eval\(|\/base64_|sleep\(|benchmark\()/i;
+  
+  if (maliciousPattern.test(rawUrl)) {
+    return res.status(403).json({ error: 'Access Denied: Malicious Signature Detected.' });
+  }
+
+  // Bloqueio de Scanners e Exploits automatizados (Nikto, SQLMap, Acunetix, etc.)
+  const ua = req.headers['user-agent'] || '';
+  if (/nikto|sqlmap|acunetix|nessus|nmap|masscan|zgrab|curl\/|wget\/|python-requests|go-http-client/i.test(ua) && !req.headers['x-internal-test']) {
+    return res.status(403).send('Forbidden: Automated Scan Prohibited.');
+  }
+
   next();
 });
 
-// Basic Rate Limiting
+// Advanced Anti-DDoS Rate Limiter com Ban Temporário
 const rateLimitWindow = 60000; // 1 min
-const maxRequests = 100;
+const maxRequests = 120; // 120 requisições / minuto
 const ipRequests = new Map();
+const bannedIPs = new Map();
+
 app.use((req, res, next) => {
-  const ip = req.ip || req.connection.remoteAddress;
+  const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.ip || req.connection.remoteAddress || '127.0.0.1';
   const now = Date.now();
+
+  // Verifica se o IP está sob penalidade temporária de DDoS (5 minutos de bloqueio)
+  if (bannedIPs.has(ip)) {
+    const banUntil = bannedIPs.get(ip);
+    if (now < banUntil) {
+      return res.status(429).json({ error: 'Blocked: IP temporarily blacklisted due to excessive rate limit violation.' });
+    } else {
+      bannedIPs.delete(ip);
+    }
+  }
+
   if (!ipRequests.has(ip)) {
     ipRequests.set(ip, { count: 1, startTime: now });
   } else {
@@ -35,7 +69,8 @@ app.use((req, res, next) => {
     } else {
       data.count++;
       if (data.count > maxRequests) {
-        return res.status(429).send('Too Many Requests');
+        bannedIPs.set(ip, now + 5 * 60 * 1000); // 5 min de ban
+        return res.status(429).json({ error: 'Too Many Requests - Anti-DDoS Threshold Exceeded' });
       }
     }
   }
