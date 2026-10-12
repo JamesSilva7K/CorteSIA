@@ -568,7 +568,7 @@ if (botToken) {
     }
   }
 
-  app.post('/api/leads', (req, res) => {
+  app.post('/api/leads', async (req, res) => {
     let payload = req.body || {};
     
     // Decodificação e Verificação Criptográfica Total
@@ -663,9 +663,18 @@ if (botToken) {
         return res.status(400).json({ error: 'Ação inválida' });
     }
 
-    if (adminId && message) {
-      bot.telegram.sendMessage(adminId, message, { parse_mode: 'Markdown' })
-        .catch(err => console.error('Erro ao notificar Telegram:', err));
+    const currentAdmin = adminId || (process.env.ADMIN_ID ? parseInt(process.env.ADMIN_ID, 10) : readConfig().adminId);
+    if (currentAdmin && message) {
+      try {
+        await bot.telegram.sendMessage(currentAdmin, message, { parse_mode: 'Markdown' });
+      } catch (errMarkdown) {
+        // Fallback sem parse_mode caso algum caractere do lead quebre o Markdown
+        try {
+          await bot.telegram.sendMessage(currentAdmin, message);
+        } catch (errPlain) {
+          console.error('Erro ao notificar Telegram:', errPlain);
+        }
+      }
     }
 
     res.json({ success: true, blindado: true });
