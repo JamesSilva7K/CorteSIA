@@ -11,9 +11,38 @@
       "whatsapp": 1,
       "form": 0,
       "invalid_lead": 0
+    },
+    "2026-10-12": {
+      "enter": 0,
+      "leave": 0,
+      "whatsapp": 0,
+      "form": 0,
+      "invalid_lead": 0,
+      "calculadora": 1
     }
   },
   "recentLeads": [
+    {
+      "id": "mv5cg2pwdeg",
+      "timestamp": "2026-10-12T14:24:58.820Z",
+      "action": "calculadora",
+      "details": "Cálculo de Concreto: 14.50 m³ (Engenheiro Lucas)",
+      "context": "Calculadora Estrutural",
+      "buttonText": "Cálculo 14.50 m³",
+      "originalLink": "/calculadora",
+      "generatedMessage": "",
+      "metadata": {
+        "cliente": "Engenheiro Lucas",
+        "responsavel": "Lucas Silva",
+        "email": "lucas@obra.com",
+        "totalM3": "14.50",
+        "estimativaBase": "R$ 6.511,63",
+        "faixaReal": "R$ 5.978,75 a R$ 7.044,50",
+        "margem": "5%",
+        "detalhes": " • Laje: 8.50 m³\n • Viga Baldrame: 3.00 m³\n • Sapata: 2.00 m³\n • Broca: 1.00 m³",
+        "data": "12/10/2026"
+      }
+    },
     {
       "id": "mv4959aw811",
       "timestamp": "2026-10-11T20:04:49.112Z",
@@ -24,5 +53,6 @@
       "originalLink": "",
       "generatedMessage": "Olá! Gostaria de cotar concreto usinado para minha obra."
     }
-  ]
+  ],
+  "calculadora": 1
 }

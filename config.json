@@ -1,6 +1,12 @@
 {
   "whatsapp": "551129163000",
   "whatsapp2": "551129163000",
+  "domain": "www.cortesiaconcreto.com.br",
   "email": "VENDAS@CORTESIACONCRETO.COM.BR",
-  "adminId": 8932547795
+  "adminId": 8932547795,
+  "concretoM3Price": 385,
+  "concretoM3MinPrice": 350,
+  "concretoM3MaxPrice": 420,
+  "bombeamentoBasePrice": 650,
+  "margemTecnica": 5
 }

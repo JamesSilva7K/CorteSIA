@@ -77,7 +77,10 @@ function readConfig() {
     domain: "www.cortesiaconcreto.com.br",
     email: "VENDAS@CORTESIACONCRETO.COM.BR",
     concretoM3Price: 385.00,
-    bombeamentoBasePrice: 650.00
+    concretoM3MinPrice: 350.00,
+    concretoM3MaxPrice: 420.00,
+    bombeamentoBasePrice: 650.00,
+    margemTecnica: 5
   };
   if (fs.existsSync(CONFIG_FILE)) {
     try {
@@ -144,17 +147,18 @@ function recordLeadAction(action, details, metadata) {
     metrics.daily[today][action] = 1;
   }
 
-  if (action === 'whatsapp' || action === 'form') {
+  if (action === 'whatsapp' || action === 'form' || action === 'calculadora') {
     if (!Array.isArray(metrics.recentLeads)) metrics.recentLeads = [];
     metrics.recentLeads.unshift({
       id: Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
       timestamp: new Date().toISOString(),
       action,
       details: details || '',
-      context: (metadata && metadata.context) || '',
-      buttonText: (metadata && metadata.buttonText) || '',
-      originalLink: (metadata && metadata.originalLink) || '',
-      generatedMessage: (metadata && metadata.generatedMessage) || ''
+      context: (metadata && metadata.context) || (action === 'calculadora' ? 'Calculadora Estrutural' : ''),
+      buttonText: (metadata && metadata.buttonText) || (action === 'calculadora' ? `Cálculo ${metadata.totalM3 || '0'} m³` : ''),
+      originalLink: (metadata && metadata.originalLink) || (action === 'calculadora' ? '/calculadora' : ''),
+      generatedMessage: (metadata && metadata.generatedMessage) || '',
+      metadata: metadata || {}
     });
     // Manter até 100 leads reais detalhados no histórico
     if (metrics.recentLeads.length > 100) {
@@ -230,6 +234,12 @@ if (botToken) {
     const config = readConfig();
     const tel1 = formatPhone(config.whatsapp);
     const tel2 = config.whatsapp2 ? formatPhone(config.whatsapp2) : 'Não configurado (1 número ativo)';
+    const pBase = Number(config.concretoM3Price || 385).toFixed(2);
+    const pMin = Number(config.concretoM3MinPrice || 350).toFixed(2);
+    const pMax = Number(config.concretoM3MaxPrice || 420).toFixed(2);
+    const pBomba = Number(config.bombeamentoBasePrice || 650).toFixed(2);
+    const margem = Number(config.margemTecnica || 5);
+
     return {
       text: `📊 *Dashboard de Controle - Cortesia Concreto*\n\n` +
         `🟢 *Status do Sistema:* Online & Blindado\n` +
@@ -237,15 +247,17 @@ if (botToken) {
         `📱 *Telefone 1 (Principal):* \`${tel1}\`\n` +
         `📱 *Telefone 2 (Secundário):* \`${tel2}\`\n` +
         `✉️ *E-mail Oficial:* \`${config.email}\`\n\n` +
-        `💰 *Métricas de Orçamento Calculadora:*\n` +
-        ` • Preço Médio Concreto: \`R$ ${Number(config.concretoM3Price || 385).toFixed(2)} / m³\`\n` +
-        ` • Taxa Base Bombeamento: \`R$ ${Number(config.bombeamentoBasePrice || 650).toFixed(2)}\`\n\n` +
+        `💰 *Métricas de Preço & Calculadora:*\n` +
+        ` • Preço Médio Concreto: \`R$ ${pBase} / m³\`\n` +
+        ` • Faixa de Preço Real: \`R$ ${pMin} a R$ ${pMax} / m³\`\n` +
+        ` • Taxa Base Bombeamento: \`R$ ${pBomba}\`\n` +
+        ` • Margem Técnica de Segurança: \`${margem}%\`\n\n` +
         `🖼️ *Pop-up de Entrada:* Imagem Gerada Ativa no Site`,
       markup: Markup.inlineKeyboard([
         [Markup.button.callback('🖼️ Gerar / Atualizar Imagem Pop-up', 'action_generate_banner')],
         [Markup.button.callback('🌐 Alterar Domínio', 'action_edit_domain'), Markup.button.callback('✉️ Alterar E-mail', 'action_edit_email')],
         [Markup.button.callback('📱 Alterar Telefone 1', 'action_edit_whatsapp'), Markup.button.callback('📱 Configurar Telefone 2', 'action_edit_whatsapp2')],
-        [Markup.button.callback('💰 Ajustar Preço Base m³', 'action_edit_price'), Markup.button.callback('📈 Relatórios de Leads', 'action_reports')]
+        [Markup.button.callback('💰 Alterar Métricas de Preços', 'action_menu_pricing'), Markup.button.callback('📈 Relatórios & Métricas', 'action_reports')]
       ])
     };
   };
@@ -415,9 +427,65 @@ if (botToken) {
     ctx.answerCbQuery();
   });
 
+  const getPricingMenu = () => {
+    const config = readConfig();
+    const pBase = Number(config.concretoM3Price || 385).toFixed(2);
+    const pMin = Number(config.concretoM3MinPrice || 350).toFixed(2);
+    const pMax = Number(config.concretoM3MaxPrice || 420).toFixed(2);
+    const pBomba = Number(config.bombeamentoBasePrice || 650).toFixed(2);
+    const margem = Number(config.margemTecnica || 5);
+
+    return {
+      text: `💰 *MÉTRICAS & FAIXAS DE PREÇO (CÁLCULO REAL)*\n` +
+        `━━━━━━━━━━━━━━━━━━━━\n` +
+        `• 💵 *Preço Base Médio:* \`R$ ${pBase} / m³\`\n` +
+        `• 📉 *Faixa Mínima Real:* \`R$ ${pMin} / m³\`\n` +
+        `• 📈 *Faixa Máxima Real:* \`R$ ${pMax} / m³\`\n` +
+        `• 🚜 *Taxa Base Bombeamento:* \`R$ ${pBomba}\`\n` +
+        `• 📐 *Margem Técnica Segurança:* \`${margem}%\`\n\n` +
+        `_Selecione abaixo o parâmetro que deseja alterar:_`,
+      markup: Markup.inlineKeyboard([
+        [Markup.button.callback('💵 Preço Médio m³', 'action_edit_price'), Markup.button.callback('🚜 Taxa de Bomba', 'action_edit_price_bomba')],
+        [Markup.button.callback('📉 Preço Mínimo m³', 'action_edit_price_min'), Markup.button.callback('📈 Preço Máximo m³', 'action_edit_price_max')],
+        [Markup.button.callback('📐 Margem Técnica %', 'action_edit_margem')],
+        [Markup.button.callback('🔙 Voltar ao Painel', 'action_back_menu')]
+      ])
+    };
+  };
+
+  bot.action('action_menu_pricing', (ctx) => {
+    const menu = getPricingMenu();
+    ctx.editMessageText(menu.text, { parse_mode: 'Markdown', ...menu.markup });
+    ctx.answerCbQuery();
+  });
+
   bot.action('action_edit_price', (ctx) => {
     state[ctx.from.id] = 'awaiting_price';
     ctx.reply('Envie o novo valor médio do m³ do Concreto em Reais (Ex: `390` ou `385.50`):', { parse_mode: 'Markdown' });
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_edit_price_min', (ctx) => {
+    state[ctx.from.id] = 'awaiting_price_min';
+    ctx.reply('Envie o valor MÍNIMO real do m³ de Concreto (Ex: `350` ou `340.00`):', { parse_mode: 'Markdown' });
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_edit_price_max', (ctx) => {
+    state[ctx.from.id] = 'awaiting_price_max';
+    ctx.reply('Envie o valor MÁXIMO real do m³ de Concreto (Ex: `420` ou `430.00`):', { parse_mode: 'Markdown' });
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_edit_price_bomba', (ctx) => {
+    state[ctx.from.id] = 'awaiting_price_bomba';
+    ctx.reply('Envie a Taxa Base de Bombeamento em Reais (Ex: `650` ou `600.00`):', { parse_mode: 'Markdown' });
+    ctx.answerCbQuery();
+  });
+
+  bot.action('action_edit_margem', (ctx) => {
+    state[ctx.from.id] = 'awaiting_margem';
+    ctx.reply('Envie a Margem Técnica de Segurança em % (Ex: `5` para 5% ou `7`):', { parse_mode: 'Markdown' });
     ctx.answerCbQuery();
   });
 
@@ -507,9 +575,63 @@ if (botToken) {
         config.concretoM3Price = cleanVal;
         writeConfig(config);
         state[ctx.from.id] = null;
-        await ctx.reply(`✅ *Preço Base do Concreto atualizado!*\nNovo valor: \`R$ ${cleanVal.toFixed(2)} / m³\`\nA calculadora de consulta usará este valor como referência inteligente.`, { parse_mode: 'Markdown' });
+        await ctx.reply(`✅ *Preço Médio do Concreto atualizado!*\nNovo valor: \`R$ ${cleanVal.toFixed(2)} / m³\`\nA calculadora usará este valor como referência inteligente.`, { parse_mode: 'Markdown' });
+        const menu = getPricingMenu();
+        await ctx.reply(menu.text, { parse_mode: 'Markdown', ...menu.markup });
       } else {
         ctx.reply('❌ Valor inválido. Envie um número positivo (Ex: `385.00` ou `390`).');
+      }
+    } else if (userState === 'awaiting_price_min') {
+      const cleanVal = parseFloat(text.replace(',', '.').replace(/[^\d.]/g, ''));
+      if (!isNaN(cleanVal) && cleanVal > 0) {
+        const config = readConfig();
+        config.concretoM3MinPrice = cleanVal;
+        writeConfig(config);
+        state[ctx.from.id] = null;
+        await ctx.reply(`✅ *Preço Mínimo do Concreto atualizado!*\nNovo piso real: \`R$ ${cleanVal.toFixed(2)} / m³\``, { parse_mode: 'Markdown' });
+        const menu = getPricingMenu();
+        await ctx.reply(menu.text, { parse_mode: 'Markdown', ...menu.markup });
+      } else {
+        ctx.reply('❌ Valor inválido. Envie um número positivo (Ex: `350` ou `340.00`).');
+      }
+    } else if (userState === 'awaiting_price_max') {
+      const cleanVal = parseFloat(text.replace(',', '.').replace(/[^\d.]/g, ''));
+      if (!isNaN(cleanVal) && cleanVal > 0) {
+        const config = readConfig();
+        config.concretoM3MaxPrice = cleanVal;
+        writeConfig(config);
+        state[ctx.from.id] = null;
+        await ctx.reply(`✅ *Preço Máximo do Concreto atualizado!*\nNovo teto real: \`R$ ${cleanVal.toFixed(2)} / m³\``, { parse_mode: 'Markdown' });
+        const menu = getPricingMenu();
+        await ctx.reply(menu.text, { parse_mode: 'Markdown', ...menu.markup });
+      } else {
+        ctx.reply('❌ Valor inválido. Envie um número positivo (Ex: `420` ou `430.00`).');
+      }
+    } else if (userState === 'awaiting_price_bomba') {
+      const cleanVal = parseFloat(text.replace(',', '.').replace(/[^\d.]/g, ''));
+      if (!isNaN(cleanVal) && cleanVal >= 0) {
+        const config = readConfig();
+        config.bombeamentoBasePrice = cleanVal;
+        writeConfig(config);
+        state[ctx.from.id] = null;
+        await ctx.reply(`✅ *Taxa Base de Bombeamento atualizada!*\nNovo valor: \`R$ ${cleanVal.toFixed(2)}\``, { parse_mode: 'Markdown' });
+        const menu = getPricingMenu();
+        await ctx.reply(menu.text, { parse_mode: 'Markdown', ...menu.markup });
+      } else {
+        ctx.reply('❌ Valor inválido. Envie um número positivo ou 0 (Ex: `650` ou `600.00`).');
+      }
+    } else if (userState === 'awaiting_margem') {
+      const cleanVal = parseFloat(text.replace(',', '.').replace(/[^\d.]/g, ''));
+      if (!isNaN(cleanVal) && cleanVal >= 0) {
+        const config = readConfig();
+        config.margemTecnica = cleanVal;
+        writeConfig(config);
+        state[ctx.from.id] = null;
+        await ctx.reply(`✅ *Margem Técnica de Segurança atualizada!*\nNova margem: \`${cleanVal}%\``, { parse_mode: 'Markdown' });
+        const menu = getPricingMenu();
+        await ctx.reply(menu.text, { parse_mode: 'Markdown', ...menu.markup });
+      } else {
+        ctx.reply('❌ Valor inválido. Envie um número percentual (Ex: `5` para 5% ou `7.5`).');
       }
     }
   });
@@ -640,19 +762,23 @@ if (botToken) {
         const calcEmail = (metadata && metadata.email) ? metadata.email : 'Não informado';
         const calcTotalM3 = (metadata && metadata.totalM3) ? metadata.totalM3 : '0.00';
         const calcPrecoBase = (metadata && metadata.estimativaBase) ? metadata.estimativaBase : 'A calcular';
+        const calcFaixa = (metadata && metadata.faixaReal) ? metadata.faixaReal : 'Consultar parâmetros';
+        const calcMargem = (metadata && metadata.margem) ? metadata.margem : '5%';
         const calcDetalhes = (metadata && metadata.detalhes) ? metadata.detalhes : '';
 
         message = `🧮 *CONSULTA AVANÇADA / CÁLCULO DE CONCRETO*\n` +
           `━━━━━━━━━━━━━━━━━━━━\n` +
           `📅 *Horário:* ${nowBR}\n` +
           `👤 *Cliente:* ${calcClient}\n` +
-          `👷 *Responsável:* ${calcResp}\n` +
+          `👷 *Responsável Técnico:* ${calcResp}\n` +
           `✉️ *E-mail:* ${calcEmail}\n\n` +
-          `📐 *Volume Total Calculado:* *${calcTotalM3} m³*\n` +
-          `💰 *Estimativa Base Sugerida:* *${calcPrecoBase}*\n` +
-          (calcDetalhes ? `\n📊 *Detalhamento Estrutural:*\n${calcDetalhes}\n` : '') +
+          `📐 *Volume Estrutural Total:* *${calcTotalM3} m³*\n` +
+          `💰 *Valor Estimado (Métrica Real):* *${calcPrecoBase}*\n` +
+          `📊 *Faixa de Mercado Parametrizada:* *${calcFaixa}*\n` +
+          `🛡️ *Margem Técnica Aplicada:* *${calcMargem}*\n\n` +
+          (calcDetalhes ? `📋 *Detalhamento por Elemento:*\n${calcDetalhes}\n\n` : '') +
           `━━━━━━━━━━━━━━━━━━━━\n` +
-          `📲 *O cliente foi redirecionado ao WhatsApp com o memorial de cálculo completo!*`;
+          `📲 *O lead recebeu os dados e foi conectado ao WhatsApp com o memorial de cálculo!*`;
         break;
 
       case 'invalid_lead':
@@ -683,6 +809,22 @@ if (botToken) {
 } else {
   console.warn('BOT_TOKEN not provided in .env.');
 }
+
+// Rota oficial de configuração e métricas sincronizadas em tempo real
+app.get('/api/config', (req, res) => {
+  const config = readConfig();
+  res.json({
+    whatsapp: config.whatsapp,
+    whatsapp2: config.whatsapp2 || null,
+    domain: config.domain,
+    email: config.email,
+    concretoM3Price: Number(config.concretoM3Price || 385),
+    concretoM3MinPrice: Number(config.concretoM3MinPrice || 350),
+    concretoM3MaxPrice: Number(config.concretoM3MaxPrice || 420),
+    bombeamentoBasePrice: Number(config.bombeamentoBasePrice || 650),
+    margemTecnica: Number(config.margemTecnica || 5)
+  });
+});
 
 // Rota raiz oficial
 app.get(['/', '/index.html'], (req, res) => {

@@ -685,7 +685,10 @@
 
             let targetWa = '551129163000';
             let precoM3 = 385.00;
+            let precoMinM3 = 350.00;
+            let precoMaxM3 = 420.00;
             let taxaBomba = 650.00;
+            let margemSeg = 5;
 
             // Sincronização em tempo real com o backend e bot telegram
             fetch('/api/config')
@@ -693,8 +696,11 @@
                 .then(cfg => {
                     if (cfg.whatsapp) targetWa = cfg.whatsapp.replace(/\D/g, '');
                     if (cfg.concretoM3Price) precoM3 = parseFloat(cfg.concretoM3Price);
+                    if (cfg.concretoM3MinPrice) precoMinM3 = parseFloat(cfg.concretoM3MinPrice);
+                    if (cfg.concretoM3MaxPrice) precoMaxM3 = parseFloat(cfg.concretoM3MaxPrice);
                     if (cfg.bombeamentoBasePrice) taxaBomba = parseFloat(cfg.bombeamentoBasePrice);
-                })
+                    if (cfg.margemTecnica) margemSeg = parseFloat(cfg.margemTecnica);
+                }).catch(function() {});
             const SECRET_KEY_SEED = "CORTESIA_SECURE_VAULT_KEY_2026_X9";
             function encryptPayload(obj) {
                 try {
@@ -910,15 +916,7 @@
                 container.appendChild(div);
             };
 
-            // CRIPTOGRAFIA & ENVIO AO WHATSAPP E TELEGRAM
-            function encryptPayload(data) {
-                try {
-                    const raw = JSON.stringify(data);
-                    return btoa(encodeURIComponent(raw).split('').reverse().join(''));
-                } catch(e) {
-                    return JSON.stringify(data);
-                }
-            }
+            // ENVIO AO WHATSAPP E TELEGRAM
 
             document.getElementById('btnCalcular').addEventListener('click', function() {
                 const r = execCalculations();
@@ -929,15 +927,26 @@
 
                 const totalM3 = r.totalGeral > 0 ? r.totalGeral.toFixed(2) : '0.00';
 
-                // Cálculo empresarial de valor base inteligente (com 5% de margem técnica da usina)
+                // Cálculo empresarial de valor base inteligente e faixa real parametrizada
                 let valorEstimadoTotal = 0;
+                let valorMinTotal = 0;
+                let valorMaxTotal = 0;
                 if (r.totalGeral > 0) {
-                    const margemSegura = r.totalGeral * 1.05;
-                    const valorConcreto = margemSegura * precoM3;
-                    valorEstimadoTotal = r.totalGeral >= 8 ? (valorConcreto + taxaBomba) : valorConcreto;
+                    const fatorMargem = 1 + (margemSeg / 100);
+                    const volMargem = r.totalGeral * fatorMargem;
+                    
+                    const custoBomba = r.totalGeral >= 8 ? taxaBomba : 0;
+                    valorEstimadoTotal = (volMargem * precoM3) + custoBomba;
+                    valorMinTotal = (volMargem * precoMinM3) + custoBomba;
+                    valorMaxTotal = (volMargem * precoMaxM3) + custoBomba;
                 }
+
                 const precoFormatado = valorEstimadoTotal > 0 
                     ? valorEstimadoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+                    : 'A calcular pela Central';
+
+                const faixaFormatada = valorMinTotal > 0 && valorMaxTotal > 0
+                    ? `${valorMinTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} a ${valorMaxTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}`
                     : 'A calcular pela Central';
 
                 const detalhamento = 
@@ -956,6 +965,8 @@
                         email: email,
                         totalM3: totalM3,
                         estimativaBase: precoFormatado,
+                        faixaReal: faixaFormatada,
+                        margem: margemSeg + '%',
                         detalhes: detalhamento,
                         data: dataHojeFormatada
                     }
@@ -979,7 +990,8 @@
                     `${detalhamento}\n` +
                     `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
                     `📐 *VOLUME TOTAL:* *${totalM3} m³*\n` +
-                    `💰 *ESTIMATIVA BASE SUGERIDA:* *${precoFormatado}*\n` +
+                    `💰 *ESTIMATIVA DE MERCADO:* *${precoFormatado}*\n` +
+                    `📊 *FAIXA REAL SUGERIDA:* *${faixaFormatada}*\n` +
                     `━━━━━━━━━━━━━━━━━━━━━━━━━\n` +
                     `Olá! Gostaria de confirmar a cubagem acima e solicitar a cotação formal com a usina da Cortesia Concreto.`;
 
